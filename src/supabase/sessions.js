@@ -57,8 +57,16 @@ export const getTodaySessions = async (userId) => {
 /** @returns {Promise<object>} Newly created session row. */
 export const addSession = async (userId, data) => {
   try {
+    const payload = {
+      user_id: userId,
+      subject_id: data.subject_id || data.subjectId,
+      date: data.date,
+      duration_minutes: data.duration_minutes || data.durationMinutes || 45,
+      notes: data.notes || data.topic || null,
+      completed: Boolean(data.completed),
+    };
     const { data: row, error } = await supabase
-      .from(TABLE).insert({ user_id: userId, ...data }).select().single();
+      .from(TABLE).insert(payload).select().single();
     if (error) throw error;
     return row;
   } catch (err) {
@@ -69,7 +77,14 @@ export const addSession = async (userId, data) => {
 /** @returns {Promise<Array>} Inserted session rows from batch. */
 export const addBatchSessions = async (userId, sessionsArray) => {
   try {
-    const rows = sessionsArray.map((s) => ({ user_id: userId, ...s }));
+    const rows = sessionsArray.map((s) => ({
+      user_id: userId,
+      subject_id: s.subject_id || s.subjectId,
+      date: s.date,
+      duration_minutes: s.duration_minutes || s.durationMinutes || 45,
+      notes: s.notes || s.topic || 'Core Concepts',
+      completed: false,
+    }));
     const { data, error } = await supabase.from(TABLE).insert(rows).select();
     if (error) throw error;
     return data;
@@ -101,6 +116,20 @@ export const markSessionComplete = async (sessionId, focusRating, notes) => {
     return data;
   } catch (err) {
     throw new Error(`Failed to mark session complete: ${err.message}`);
+  }
+};
+
+/** @returns {Promise<object>} Toggled session row. */
+export const toggleSessionCompleteDB = async (sessionId, isCompleted, focusRating = 5, notes = '') => {
+  try {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .update({ completed: isCompleted, focus_rating: isCompleted ? focusRating : null, notes })
+      .eq('id', sessionId).select().single();
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    throw new Error(`Failed to toggle session: ${err.message}`);
   }
 };
 

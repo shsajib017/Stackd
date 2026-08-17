@@ -41,13 +41,14 @@ const BudgetScreen = React.memo(({ navigation }) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <Pressable
+        <TouchableOpacity
           onPress={() => setDrawerVisible(true)}
-          style={({ pressed }) => [styles.headerMenuBtn, { opacity: pressed ? 0.5 : 1 }]}
-          hitSlop={{ top: 15, bottom: 15, left: 15, right: 25 }}
+          style={styles.headerMenuBtn}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          activeOpacity={0.6}
         >
-          <Text pointerEvents="none" style={styles.headerMenuIcon}>☰</Text>
-        </Pressable>
+          <Text style={styles.headerMenuIcon}>☰</Text>
+        </TouchableOpacity>
       ),
     });
   }, [navigation]);
@@ -162,8 +163,8 @@ const BudgetScreen = React.memo(({ navigation }) => {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', marginLeft: -8 },
-  headerMenuIcon: { width: '100%', height: '100%', textAlign: 'center', textAlignVertical: 'center', lineHeight: 44, fontSize: 24, color: colors.textPrimary, fontWeight: '700', includeFontPadding: false },
+  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerMenuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
   content: { paddingHorizontal: spacing.md, paddingTop: spacing.md },
   monthSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
   arrowButton: { padding: spacing.sm },

@@ -8,6 +8,7 @@ import EmptyState from '../../components/common/EmptyState';
 import SectionHeader from '../../components/common/SectionHeader';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
+import StatusChip from '../../components/common/StatusChip';
 import SpendingChart from '../../components/budget/SpendingChart';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -40,7 +41,6 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
     return entries.sort((a, b) => b[1] - a[1]);
   }, [categoryBreakdown]);
 
-  // Chart data: show all days or days up to today if in current month
   const chartDays = useMemo(() => {
     const list = dailyData || [];
     if (isCurrentMonth) {
@@ -101,11 +101,13 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
       </View>
       <StatCard icon={net >= 0 ? '✅' : '⚠️'} value={formatBDT(Math.abs(net))} label={net >= 0 ? 'Net balance' : 'Over budget'} color={net >= 0 ? colors.success : colors.error} style={styles.mb} />
 
-      {/* Prediction Banner */}
-      <View style={[styles.banner, prediction.isOverBudget && styles.bannerDanger]}>
-        <Text style={styles.bannerText}>
-          {prediction.isOverBudget ? `Projected to overspend by ${formatBDT(prediction.projected - prediction.remaining)} ⚠️` : 'On track ✅'}
-        </Text>
+      {/* Prediction Status Chip */}
+      <View style={styles.chipRow}>
+        {prediction.isOverBudget ? (
+          <StatusChip label={`Projected to overspend by ${formatBDT(prediction.projected - prediction.remaining)}`} type="danger" icon="⚠️" size="md" />
+        ) : (
+          <StatusChip label="On track" type="success" icon="✅" size="md" />
+        )}
       </View>
 
       {/* Category Breakdown */}
@@ -123,11 +125,19 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
 
       {/* vs Last Month */}
       <SectionHeader title="vs Last Month" style={styles.mt} />
-      <View style={[styles.compCard, !hasPrevData ? styles.compNeutral : (direction === 'up' ? styles.compDanger : (direction === 'down' ? styles.compGood : styles.compNeutral))]}>
-        <Text style={styles.compText}>
-          {!hasPrevData ? 'No data last month' : (direction === 'up' ? `▲ ${percentChange}% more than last month` : (direction === 'down' ? `▼ ${percentChange}% less than last month` : 'Same as last month'))}
-        </Text>
-        {hasPrevData && <Text style={styles.compSub}>{direction === 'up' ? '+' : (direction === 'down' ? '-' : '')}{formatBDT(diffAmount)}</Text>}
+      <View style={styles.compCard}>
+        <View style={styles.compHeader}>
+          {!hasPrevData ? (
+            <StatusChip label="No data last month" type="neutral" size="sm" />
+          ) : direction === 'up' ? (
+            <StatusChip label={`▲ ${percentChange}% more`} type="danger" icon="📈" size="sm" />
+          ) : direction === 'down' ? (
+            <StatusChip label={`▼ ${percentChange}% less`} type="success" icon="📉" size="sm" />
+          ) : (
+            <StatusChip label="Same as last month" type="neutral" size="sm" />
+          )}
+        </View>
+        {hasPrevData ? <Text style={styles.compSub}>{direction === 'up' ? '+' : (direction === 'down' ? '-' : '')}{formatBDT(diffAmount)}</Text> : null}
       </View>
 
       {/* Daily Spending Continuous Chart */}
@@ -158,9 +168,7 @@ const styles = StyleSheet.create({
   monthTitle: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary },
   statRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
   statCard: { flex: 1 },
-  banner: { backgroundColor: `${colors.accent}18`, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md, borderLeftWidth: 3, borderLeftColor: colors.accent },
-  bannerDanger: { backgroundColor: `${colors.error}12`, borderLeftColor: colors.error },
-  bannerText: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary },
+  chipRow: { marginBottom: spacing.md },
   catRow: { marginBottom: spacing.sm },
   catInfo: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   catIcon: { fontSize: 16, marginRight: spacing.xs },
@@ -168,12 +176,9 @@ const styles = StyleSheet.create({
   barOuter: { height: 10, backgroundColor: `${colors.textTertiary}20`, borderRadius: borderRadius.full, overflow: 'hidden', marginBottom: 2 },
   barInner: { height: '100%', backgroundColor: colors.primary, borderRadius: borderRadius.full },
   catAmount: { fontSize: fontSizes.xs, color: colors.textSecondary, fontWeight: '600' },
-  compCard: { borderRadius: borderRadius.md, padding: spacing.md, ...shadows.sm, marginBottom: spacing.sm },
-  compGood: { backgroundColor: `${colors.success}12`, borderLeftWidth: 3, borderLeftColor: colors.success },
-  compDanger: { backgroundColor: `${colors.error}12`, borderLeftWidth: 3, borderLeftColor: colors.error },
-  compNeutral: { backgroundColor: `${colors.textTertiary}12`, borderLeftWidth: 3, borderLeftColor: colors.textTertiary },
-  compText: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary },
-  compSub: { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
+  compCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm, marginBottom: spacing.sm },
+  compHeader: { flex: 1 },
+  compSub: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary },
 });
 
 export default SpendingReportScreen;

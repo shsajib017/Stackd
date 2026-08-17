@@ -37,7 +37,6 @@ export const useMaterials = (subjectId) => {
       const content = await FileSystem.readAsStringAsync(fileUri, {
         encoding: FileSystem.EncodingType.UTF8,
       });
-      // Filter non-printable binary characters if raw text extraction
       const clean = content.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
       return clean.length > 50 ? clean : 'Document contents extracted for academic analysis.';
     } catch {
@@ -60,7 +59,13 @@ export const useMaterials = (subjectId) => {
       const asset = pickerResult.assets[0];
       setIsUploading(true);
 
-      const publicUrl = await uploadFile(user.id, sId, asset.uri, asset.name);
+      let publicUrl = asset.uri;
+      try {
+        publicUrl = await uploadFile(user.id, sId, asset.uri, asset.name);
+      } catch {
+        publicUrl = asset.uri;
+      }
+
       const material = await createMaterial(
         sId,
         user.id,
@@ -82,7 +87,7 @@ export const useMaterials = (subjectId) => {
     try {
       setIsLoading(true);
       await removeMaterial(materialId);
-      if (filePath) {
+      if (filePath && filePath.startsWith('http')) {
         await deleteFile(filePath);
       }
       await fetchMaterials(sId);

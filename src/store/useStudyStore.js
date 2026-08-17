@@ -27,6 +27,15 @@ export const useStudyStore = create((set) => ({
         s.id === id ? { ...s, completed: true } : s
       ),
     })),
+  toggleSessionLocal: (id) =>
+    set((state) => ({
+      sessions: state.sessions.map((s) =>
+        s.id === id ? { ...s, completed: !s.completed } : s
+      ),
+      todaySessions: state.todaySessions.map((s) =>
+        s.id === id ? { ...s, completed: !s.completed } : s
+      ),
+    })),
 
   setStreak: (streak) => set({ streak }),
   setLoading: (isLoading) => set({ isLoading }),

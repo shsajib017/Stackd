@@ -29,15 +29,15 @@ const StatCard = React.memo(({
       onPress={onPress}
       activeOpacity={onPress ? 0.75 : 1}
     >
-      <View style={[styles.iconContainer, { backgroundColor: `${color}1A` }]}>
+      <View style={[styles.iconContainer, { backgroundColor: `${color}18` }]}>
         <Text style={styles.icon}>{icon}</Text>
       </View>
       <View style={styles.content}>
-        <Text style={styles.value} numberOfLines={1}>
-          {value}
-        </Text>
         <Text style={styles.label} numberOfLines={1}>
           {label}
+        </Text>
+        <Text style={[styles.value, { color }]} numberOfLines={1}>
+          {value}
         </Text>
       </View>
     </ContainerComponent>
@@ -49,35 +49,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.sm,
+    borderWidth: 1,
+    borderColor: `${colors.textTertiary}20`,
     ...shadows.sm,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.md,
+    width: 34,
+    height: 34,
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.md,
+    marginRight: spacing.xs + 2,
   },
   icon: {
-    fontSize: 22,
+    fontSize: 16,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
   },
-  value: {
-    fontSize: fontSizes.lg,
-    fontWeight: '800',
-    color: colors.textPrimary,
+  label: {
+    fontSize: fontSizes.xs - 1,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
     marginBottom: 2,
   },
-  label: {
-    fontSize: fontSizes.xs,
-    fontWeight: '500',
-    color: colors.textSecondary,
+  value: {
+    fontSize: fontSizes.sm + 1,
+    fontWeight: '800',
   },
 });
 

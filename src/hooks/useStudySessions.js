@@ -6,8 +6,9 @@ import {
   getSessions,
   getTodaySessions,
   getWeeklyStudyMinutes,
-  markSessionComplete,
+  toggleSessionCompleteDB,
 } from '../supabase/sessions';
+import { getSubjects } from '../supabase/subjects';
 import useAuthStore from '../store/useAuthStore';
 import useStudyStore from '../store/useStudyStore';
 
@@ -19,10 +20,12 @@ export const useStudySessions = () => {
   const {
     sessions,
     todaySessions,
+    subjects,
     isLoading,
     setSessions,
     setTodaySessions,
-    markSessionLocal,
+    setSubjects,
+    toggleSessionLocal,
     setLoading,
   } = useStudyStore();
 
@@ -30,24 +33,31 @@ export const useStudySessions = () => {
   const [weeklyStudyMinutes, setWeeklyStudyMinutes] = useState(0);
 
   const fetchSessions = useCallback(async (filters = {}) => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
-      const [allSessions, todayList, weeklyMins] = await Promise.all([
+      const [allSessions, todayList, weeklyMins, subjectsList] = await Promise.all([
         getSessions(user.id, filters),
         getTodaySessions(user.id),
         getWeeklyStudyMinutes(user.id),
+        getSubjects(user.id),
       ]);
       setSessions(allSessions);
       setTodaySessions(todayList);
       setWeeklyStudyMinutes(weeklyMins);
+      if (setSubjects && subjectsList) {
+        setSubjects(subjectsList);
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [setLoading, setSessions, setTodaySessions, user?.id]);
+  }, [setLoading, setSessions, setSubjects, setTodaySessions, user?.id]);
 
   const addSession = useCallback(async (data) => {
     if (!user?.id) return null;
@@ -73,10 +83,13 @@ export const useStudySessions = () => {
     }
   }, [fetchSessions, user?.id]);
 
-  const markComplete = useCallback(async (sessionId, focusRating = 5, notes = '') => {
+  const toggleSessionComplete = useCallback(async (sessionId, focusRating = 5, notes = '') => {
+    const target = (sessions || []).find((s) => s.id === sessionId);
+    const nextCompleted = target ? !target.completed : true;
+
     try {
-      markSessionLocal(sessionId);
-      const row = await markSessionComplete(sessionId, focusRating, notes);
+      toggleSessionLocal(sessionId);
+      const row = await toggleSessionCompleteDB(sessionId, nextCompleted, focusRating, notes);
       if (user?.id) {
         const mins = await getWeeklyStudyMinutes(user.id);
         setWeeklyStudyMinutes(mins);
@@ -86,7 +99,7 @@ export const useStudySessions = () => {
       setError(err.message);
       throw new Error(err.message);
     }
-  }, [markSessionLocal, user?.id]);
+  }, [sessions, toggleSessionLocal, user?.id]);
 
   const deleteSession = useCallback(async (sessionId) => {
     try {
@@ -105,7 +118,8 @@ export const useStudySessions = () => {
     error,
     addSession,
     addBatchSessions,
-    markComplete,
+    toggleSessionComplete,
+    markComplete: toggleSessionComplete,
     deleteSession,
     fetchSessions,
     weeklyStudyMinutes,

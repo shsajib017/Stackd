@@ -4,6 +4,7 @@ import {
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
 import useBudget from '../../hooks/useBudget';
 import useUIStore from '../../store/useUIStore';
@@ -16,10 +17,9 @@ import Input from '../../components/common/Input';
 
 const SOURCE_ICONS = { Allowance: '💸', 'Part-time': '💼', Scholarship: '🎓', Other: '📦' };
 
-/**
- * Dedicated Screen for Editing and Deleting Income.
- */
+/** Dedicated Screen for Editing and Deleting Income. */
 const EditIncomeScreen = React.memo(({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const income = route.params?.income || {};
   const { updateIncome, deleteIncome } = useBudget();
   const showToast = useUIStore((state) => state.showToast);
@@ -47,20 +47,12 @@ const EditIncomeScreen = React.memo(({ navigation, route }) => {
   const handleUpdate = useCallback(async () => {
     setErrorMessage(null);
     const dateStr = formatDateForDB(date);
-    const validation = validateIncome({ amount: Number(amount), source, date: dateStr });
-    if (!validation.isValid) {
-      setErrorMessage(Object.values(validation.errors)[0]);
-      return;
-    }
+    const validation = validateIncome({ amount: parseFloat(amount), source, date: dateStr });
+    if (!validation.isValid) { setErrorMessage(Object.values(validation.errors)[0]); return; }
 
     try {
       setIsLoading(true);
-      await updateIncome(income.id, {
-        amount: Number(amount),
-        source,
-        note: note.trim(),
-        date: dateStr,
-      });
+      await updateIncome(income.id, { amount: parseFloat(amount), source, note: note.trim(), date: dateStr });
       showToast('Income updated successfully', 'success');
       navigation.goBack();
     } catch (err) {
@@ -84,19 +76,14 @@ const EditIncomeScreen = React.memo(({ navigation, route }) => {
     }
   }, [deleteIncome, income.id, navigation, showToast]);
 
+  const scrollBottomPadding = Math.max(insets.bottom, spacing.md) + 220;
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>
           <Text style={styles.currencyPrefix}>৳</Text>
-          <TextInput
-            style={styles.amountInput}
-            value={amount}
-            onChangeText={setAmount}
-            placeholder="0.00"
-            placeholderTextColor={colors.textTertiary}
-            keyboardType="decimal-pad"
-          />
+          <TextInput style={styles.amountInput} value={amount} onChangeText={setAmount} placeholder="0.00" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" autoFocus />
         </View>
 
         <Text style={styles.sectionLabel}>Source</Text>
@@ -104,12 +91,7 @@ const EditIncomeScreen = React.memo(({ navigation, route }) => {
           {INCOME_SOURCES.map((src) => {
             const isSelected = source === src;
             return (
-              <TouchableOpacity
-                key={src}
-                style={[styles.sourcePill, isSelected ? styles.sourcePillActive : styles.sourcePillInactive]}
-                onPress={() => setSource(src)}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity key={src} style={[styles.sourcePill, isSelected ? styles.sourcePillActive : styles.sourcePillInactive]} onPress={() => setSource(src)} activeOpacity={0.8}>
                 <Text style={styles.sourceIcon}>{SOURCE_ICONS[src] || '📦'}</Text>
                 <Text style={[styles.sourceText, isSelected && styles.sourceTextActive]}>{src}</Text>
               </TouchableOpacity>
@@ -149,7 +131,7 @@ const EditIncomeScreen = React.memo(({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: spacing.md, paddingBottom: spacing.xxl },
+  scrollContent: { padding: spacing.md },
   amountContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: spacing.lg },
   currencyPrefix: { fontSize: fontSizes.xxxl, fontWeight: '800', color: colors.success, marginRight: spacing.xs },
   amountInput: { fontSize: fontSizes.xxxl + 4, fontWeight: '900', color: colors.textPrimary, minWidth: 120, textAlign: 'center' },

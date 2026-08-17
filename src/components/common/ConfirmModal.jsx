@@ -1,20 +1,10 @@
 import React from 'react';
-import { Modal, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
 import Button from './Button';
 
 /**
- * Confirmation dialog modal for approving or canceling critical actions.
- *
- * @param {object} props
- * @param {boolean} props.visible - Modal visibility state.
- * @param {string} props.title - Modal header title.
- * @param {string} props.message - Descriptive confirmation message.
- * @param {string} [props.confirmLabel='Confirm'] - Confirm action button text.
- * @param {string} [props.cancelLabel='Cancel'] - Cancel action button text.
- * @param {() => void} props.onConfirm - Confirm button callback.
- * @param {() => void} props.onCancel - Cancel button callback.
- * @param {boolean} [props.isDanger=false] - Destructive danger style toggle.
+ * Absolute overlay confirmation dialog perfectly centered across any screen or modal.
  */
 const ConfirmModal = React.memo(({
   visible,
@@ -29,64 +19,64 @@ const ConfirmModal = React.memo(({
   if (!visible) return null;
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onCancel}
-    >
-      <TouchableWithoutFeedback onPress={onCancel}>
-        <View style={styles.overlay}>
-          <TouchableWithoutFeedback>
-            <View style={styles.card}>
-              <Text style={styles.title}>{title}</Text>
-              <Text style={styles.message}>{message}</Text>
-              <View style={styles.buttonRow}>
-                <View style={styles.buttonWrapper}>
-                  <Button
-                    label={cancelLabel}
-                    onPress={onCancel}
-                    variant="secondary"
-                    size="md"
-                    fullWidth
-                  />
-                </View>
-                <View style={styles.buttonWrapper}>
-                  <Button
-                    label={confirmLabel}
-                    onPress={onConfirm}
-                    variant={isDanger ? 'danger' : 'primary'}
-                    size="md"
-                    fullWidth
-                  />
-                </View>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
+    <View style={styles.overlay}>
+      <TouchableOpacity style={styles.backdropPress} activeOpacity={1} onPress={onCancel} />
+      <View style={styles.card}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.message}>{message}</Text>
+        <View style={styles.buttonRow}>
+          <View style={styles.buttonWrapper}>
+            <Button
+              label={cancelLabel}
+              onPress={onCancel}
+              variant="secondary"
+              size="md"
+              fullWidth
+            />
+          </View>
+          <View style={styles.buttonWrapper}>
+            <Button
+              label={confirmLabel}
+              onPress={onConfirm}
+              variant={isDanger ? 'danger' : 'primary'}
+              size="md"
+              fullWidth
+            />
+          </View>
         </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+      </View>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    zIndex: 9999,
+    elevation: 999,
+  },
+  backdropPress: {
+    ...StyleSheet.absoluteFillObject,
   },
   card: {
-    width: '100%',
+    width: '88%',
+    maxWidth: 340,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+    alignItems: 'center',
     ...shadows.lg,
+    elevation: 1000,
+    zIndex: 10000,
   },
   title: {
-    fontSize: fontSizes.xl,
-    fontWeight: '700',
+    fontSize: fontSizes.lg + 1,
+    fontWeight: '800',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
     textAlign: 'center',
@@ -95,14 +85,16 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.sm,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 22,
     marginBottom: spacing.xl,
+    paddingHorizontal: spacing.xs,
   },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     gap: spacing.sm,
+    width: '100%',
   },
   buttonWrapper: {
     flex: 1,

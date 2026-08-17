@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, fontSizes, spacing } from '../../config/theme';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors, fontSizes } from '../../config/theme';
 import SideDrawer from '../../components/common/SideDrawer';
 
 /** Profile and Settings Screen */
@@ -10,13 +10,14 @@ const ProfileScreen = React.memo(({ navigation }) => {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <Pressable
+        <TouchableOpacity
           onPress={() => setDrawerVisible(true)}
-          style={({ pressed }) => [styles.headerMenuBtn, { opacity: pressed ? 0.5 : 1 }]}
-          hitSlop={{ top: 15, bottom: 15, left: 15, right: 25 }}
+          style={styles.headerMenuBtn}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          activeOpacity={0.6}
         >
-          <Text pointerEvents="none" style={styles.headerMenuIcon}>☰</Text>
-        </Pressable>
+          <Text style={styles.headerMenuIcon}>☰</Text>
+        </TouchableOpacity>
       ),
     });
   }, [navigation]);
@@ -31,8 +32,8 @@ const ProfileScreen = React.memo(({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' },
-  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', marginLeft: -8 },
-  headerMenuIcon: { width: '100%', height: '100%', textAlign: 'center', textAlignVertical: 'center', lineHeight: 44, fontSize: 24, color: colors.textPrimary, fontWeight: '700', includeFontPadding: false },
+  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
+  headerMenuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
   title: { fontSize: fontSizes.xl, color: colors.primary, fontWeight: 'bold' },
 });
 

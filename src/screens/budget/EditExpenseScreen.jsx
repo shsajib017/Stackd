@@ -4,6 +4,7 @@ import {
   Switch, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
 import useBudget from '../../hooks/useBudget';
 import useUIStore from '../../store/useUIStore';
@@ -18,6 +19,7 @@ const CATEGORY_ICONS = { Food: '🍔', Transport: '🚌', Books: '📚', Tuition
 
 /** Dedicated Screen for Editing and Deleting an Expense. */
 const EditExpenseScreen = React.memo(({ navigation, route }) => {
+  const insets = useSafeAreaInsets();
   const expense = route.params?.expense || {};
   const { updateExpense, deleteExpense } = useBudget();
   const showToast = useUIStore((state) => state.showToast);
@@ -28,9 +30,7 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
   const [date, setDate] = useState(expense.date ? new Date(expense.date) : new Date());
   const [isRecurring, setIsRecurring] = useState(Boolean(expense.is_recurring));
   const [recurrenceInterval, setRecurrenceInterval] = useState(
-    expense.recurrence_interval
-      ? expense.recurrence_interval.charAt(0).toUpperCase() + expense.recurrence_interval.slice(1)
-      : 'Monthly'
+    expense.recurrence_interval ? expense.recurrence_interval.charAt(0).toUpperCase() + expense.recurrence_interval.slice(1) : 'Monthly'
   );
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -44,11 +44,7 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
       setNote(exp.note || '');
       setDate(exp.date ? new Date(exp.date) : new Date());
       setIsRecurring(Boolean(exp.is_recurring));
-      setRecurrenceInterval(
-        exp.recurrence_interval
-          ? exp.recurrence_interval.charAt(0).toUpperCase() + exp.recurrence_interval.slice(1)
-          : 'Monthly'
-      );
+      setRecurrenceInterval(exp.recurrence_interval ? exp.recurrence_interval.charAt(0).toUpperCase() + exp.recurrence_interval.slice(1) : 'Monthly');
     }
   }, [route.params?.expense]);
 
@@ -62,12 +58,7 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
 
     try {
       setIsLoading(true);
-      await updateExpense(expense.id, {
-        amount: Number(amount),
-        category,
-        note: note.trim(),
-        date: dateStr,
-      });
+      await updateExpense(expense.id, { amount: Number(amount), category, note: note.trim(), date: dateStr });
       showToast('Expense updated successfully', 'success');
       navigation.goBack();
     } catch (err) {
@@ -91,9 +82,11 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
     }
   }, [deleteExpense, expense.id, navigation, showToast]);
 
+  const scrollBottomPadding = Math.max(insets.bottom, spacing.md) + 220;
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>
           <Text style={styles.currencyPrefix}>৳</Text>
           <TextInput style={styles.amountInput} value={amount} onChangeText={setAmount} placeholder="0.00" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
@@ -162,7 +155,7 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: spacing.md, paddingBottom: 130 },
+  scrollContent: { padding: spacing.md },
   amountContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: spacing.lg },
   currencyPrefix: { fontSize: fontSizes.xxxl, fontWeight: '800', color: colors.primary, marginRight: spacing.xs },
   amountInput: { fontSize: fontSizes.xxxl + 4, fontWeight: '900', color: colors.textPrimary, minWidth: 120, textAlign: 'center' },

@@ -12,6 +12,11 @@ export const formatMinutes = (minutes) => {
 };
 
 /**
+ * Formats duration in minutes to readable text (alias of formatMinutes).
+ */
+export const formatDuration = formatMinutes;
+
+/**
  * Formats seconds into MM:SS digital countdown clock format.
  * @param {number|string} seconds - Total seconds.
  * @returns {string} Formatted clock "MM:SS".
@@ -38,6 +43,7 @@ export const formatStudyHours = (minutes) => {
 
 export default {
   formatMinutes,
+  formatDuration,
   formatCountdown,
   formatStudyHours,
 };

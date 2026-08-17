@@ -1,3 +1,5 @@
+import { colors, fontSizes, spacing } from '../config/theme';
+
 /**
  * Strips markdown syntax from a string, returning plain text.
  * @param {string} text - Raw markdown string.
@@ -33,28 +35,47 @@ export const truncateText = (text = '', maxLength = 120) => {
 };
 
 /**
- * Extracts the first heading from a markdown string.
- * @param {string} markdown - Raw markdown string.
- * @returns {string} First heading text, or empty string.
+ * Counts words in a markdown string.
  */
-export const extractFirstHeading = (markdown = '') => {
-  const match = markdown.match(/^#{1,6}\s+(.+)$/m);
-  return match ? match[1].trim() : '';
+export const getWordCount = (text = '') => {
+  const clean = stripMarkdown(text);
+  if (!clean) return 0;
+  return clean.split(/\s+/).filter(Boolean).length;
 };
 
 /**
- * Counts the number of bullet points (unordered list items) in markdown.
- * @param {string} markdown - Raw markdown string.
- * @returns {number} Count of bullet items.
+ * Calculates estimated reading time in minutes (based on 200 wpm).
  */
-export const countBulletPoints = (markdown = '') => {
-  const matches = markdown.match(/^\s*[-*+]\s/gm);
-  return matches ? matches.length : 0;
+export const getReadingTime = (wordCount) => {
+  return Math.max(1, Math.ceil(wordCount / 200));
+};
+
+/**
+ * Formats relative timestamp for saved notes.
+ */
+export const getSavedAgoText = (timestamp) => {
+  if (!timestamp) return null;
+  const diffSec = Math.floor((Date.now() - timestamp) / 1000);
+  if (diffSec < 30) return 'Saved just now';
+  const mins = Math.floor(diffSec / 60);
+  if (mins <= 1) return 'Saved 1 min ago';
+  if (mins < 60) return `Saved ${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  return hrs === 1 ? 'Saved 1 hr ago' : `Saved ${hrs} hrs ago`;
+};
+
+export const markdownStyles = {
+  body: { color: colors.textPrimary, fontSize: fontSizes.sm + 1, lineHeight: 22 },
+  heading1: { fontSize: fontSizes.xl, fontWeight: '800', color: colors.primary, marginBottom: spacing.xs },
+  heading2: { fontSize: fontSizes.lg, fontWeight: '700', color: colors.primary, marginBottom: spacing.xs },
+  hr: { backgroundColor: `${colors.textTertiary}30`, height: 1, marginVertical: spacing.sm },
 };
 
 export default {
   stripMarkdown,
   truncateText,
-  extractFirstHeading,
-  countBulletPoints,
+  getWordCount,
+  getReadingTime,
+  getSavedAgoText,
+  markdownStyles,
 };

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { generateSchedule as buildSchedule } from '../utils/scheduleGenerator';
-import { addBatchSessions } from '../supabase/sessions';
+import { addBatchSessions, getSessions } from '../supabase/sessions';
 import useAuthStore from '../store/useAuthStore';
 import useStudyStore from '../store/useStudyStore';
 
@@ -15,11 +15,11 @@ export const useSchedule = () => {
   const [generatedSessions, setGeneratedSessions] = useState([]);
   const [error, setError] = useState(null);
 
-  const generateSchedule = useCallback((subjects, availableHours) => {
+  const generateSchedule = useCallback((subjects, availableHours, sessionLength, startDate) => {
     try {
       setIsGenerating(true);
       setError(null);
-      const schedule = buildSchedule(subjects, availableHours);
+      const schedule = buildSchedule(subjects, availableHours, sessionLength, startDate);
       setGeneratedSessions(schedule);
       return schedule;
     } catch (err) {
@@ -40,15 +40,16 @@ export const useSchedule = () => {
       setError(null);
 
       const formatted = list.map((s) => ({
-        subject_id: s.subjectId,
+        subject_id: s.subjectId || s.subject_id,
         date: s.date,
-        duration_minutes: s.durationMinutes,
-        topic: s.topic,
+        duration_minutes: s.durationMinutes || s.duration_minutes || 45,
+        notes: s.topic || s.notes || 'Core Concepts',
         completed: false,
       }));
 
       const rows = await addBatchSessions(user.id, formatted);
-      setSessions(rows);
+      const allUpdated = await getSessions(user.id);
+      setSessions(allUpdated || rows);
       setGeneratedSessions([]);
       return rows;
     } catch (err) {

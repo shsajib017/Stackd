@@ -2,15 +2,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { POMODORO_BREAK_MINUTES, POMODORO_WORK_MINUTES } from '../utils/constants';
 import { formatCountdown } from '../utils/formatTime';
 
-const WORK_SECONDS = POMODORO_WORK_MINUTES * 60;
-const BREAK_SECONDS = POMODORO_BREAK_MINUTES * 60;
-
 /**
  * Pomodoro timer hook with auto-switching work and break phases.
  */
-export const usePomodoro = () => {
+export const usePomodoro = (customWorkMinutes, customBreakMinutes) => {
+  const workSeconds = (Number(customWorkMinutes) || POMODORO_WORK_MINUTES) * 60;
+  const breakSeconds = (Number(customBreakMinutes) || POMODORO_BREAK_MINUTES) * 60;
+
   const [isBreak, setIsBreak] = useState(false);
-  const [seconds, setSeconds] = useState(WORK_SECONDS);
+  const [seconds, setSeconds] = useState(workSeconds);
+  const [totalSeconds, setTotalSeconds] = useState(workSeconds);
   const [isRunning, setIsRunning] = useState(false);
   const [completedSessions, setCompletedSessions] = useState(0);
 
@@ -29,12 +30,14 @@ export const usePomodoro = () => {
     if (!isBreak) {
       setCompletedSessions((prev) => prev + 1);
       setIsBreak(true);
-      setSeconds(BREAK_SECONDS);
+      setSeconds(breakSeconds);
+      setTotalSeconds(breakSeconds);
     } else {
       setIsBreak(false);
-      setSeconds(WORK_SECONDS);
+      setSeconds(workSeconds);
+      setTotalSeconds(workSeconds);
     }
-  }, [clearTimer, isBreak]);
+  }, [breakSeconds, clearTimer, isBreak, workSeconds]);
 
   useEffect(() => {
     if (isRunning) {
@@ -71,25 +74,31 @@ export const usePomodoro = () => {
     clearTimer();
     setIsRunning(false);
     setIsBreak(false);
-    setSeconds(WORK_SECONDS);
-  }, [clearTimer]);
+    setSeconds(workSeconds);
+    setTotalSeconds(workSeconds);
+  }, [clearTimer, workSeconds]);
 
   const skip = useCallback(() => {
     clearTimer();
     setIsRunning(false);
     if (!isBreak) {
       setIsBreak(true);
-      setSeconds(BREAK_SECONDS);
+      setSeconds(breakSeconds);
+      setTotalSeconds(breakSeconds);
     } else {
       setIsBreak(false);
-      setSeconds(WORK_SECONDS);
+      setSeconds(workSeconds);
+      setTotalSeconds(workSeconds);
     }
-  }, [clearTimer, isBreak]);
+  }, [breakSeconds, clearTimer, isBreak, workSeconds]);
 
   const formattedTime = useMemo(() => formatCountdown(seconds), [seconds]);
+  const progress = useMemo(() => (totalSeconds > 0 ? seconds / totalSeconds : 0), [seconds, totalSeconds]);
 
   return {
     seconds,
+    totalSeconds,
+    progress,
     isRunning,
     isBreak,
     completedSessions,
