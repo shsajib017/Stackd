@@ -21,7 +21,7 @@ const ProfileStack = React.memo(() => {
         headerTitleAlign: 'center',
       }}
     >
-      <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ title: 'Student Profile' }} />
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="BMICalculatorScreen" component={BMICalculatorScreen} options={{ title: 'BMI & Calories' }} />
       <Stack.Screen name="GoalsScreen" component={GoalsScreen} options={{ title: 'Academic Goals' }} />
       <Stack.Screen name="AppSettingsScreen" component={AppSettingsScreen} options={{ title: 'Settings' }} />

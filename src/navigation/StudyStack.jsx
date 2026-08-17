@@ -25,7 +25,7 @@ const StudyStack = React.memo(() => {
         headerTitleAlign: 'center',
       }}
     >
-      <Stack.Screen name="StudyScreen" component={StudyScreen} options={{ title: 'Study Hub' }} />
+      <Stack.Screen name="StudyScreen" component={StudyScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SubjectsScreen" component={SubjectsScreen} options={{ title: 'Subjects' }} />
       <Stack.Screen name="AddSubjectScreen" component={AddSubjectScreen} options={{ title: 'Add Subject' }} />
       <Stack.Screen name="SubjectDetailScreen" component={SubjectDetailScreen} options={{ title: 'Subject Details' }} />

@@ -16,6 +16,8 @@ import CategoryBar from '../../components/budget/CategoryBar';
 import SavingsGoalCard from '../../components/budget/SavingsGoalCard';
 import ExpenseCard from '../../components/budget/ExpenseCard';
 
+import AppHeader from '../../components/common/AppHeader';
+
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 /**
@@ -37,21 +39,6 @@ const BudgetScreen = React.memo(({ navigation }) => {
   const { expenses, income, monthlyTotal, incomeTotal, fetchExpenses, fetchIncome, isLoading: budgetLoading } = useBudget(year, month);
   const { goals, fetchGoals, isLoading: goalsLoading } = useSavings();
   const { categoryBreakdown, prediction, fetchReport, isLoading: reportLoading } = useSpendingReport(year, month);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.headerMenuBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.6}
-        >
-          <Text style={styles.headerMenuIcon}>☰</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   const refreshData = useCallback(() => {
     fetchExpenses(year, month);
@@ -127,6 +114,7 @@ const BudgetScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.screen}>
+      <AppHeader title="Budget & Expenses" onMenuPress={() => setDrawerVisible(true)} />
       <FlatList
         data={recentExpenses}
         keyExtractor={(item) => item.id}

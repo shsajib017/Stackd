@@ -22,6 +22,8 @@ import StudySummaryCard from '../../components/home/StudySummaryCard';
 import MealSummaryCard from '../../components/home/MealSummaryCard';
 import UpcomingExamCard from '../../components/home/UpcomingExamCard';
 
+import AppHeader from '../../components/common/AppHeader';
+
 /**
  * Main Home Dashboard Screen for Stackd.
  */
@@ -35,21 +37,6 @@ const HomeScreen = React.memo(({ navigation }) => {
 
   const [subjects, setSubjects] = useState([]);
   const [subjectsLoading, setSubjectsLoading] = useState(false);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.headerMenuBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.6}
-        >
-          <Text style={styles.headerMenuIcon}>☰</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   const refreshDashboard = useCallback(() => {
     fetchExpenses();
@@ -152,6 +139,7 @@ const HomeScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <AppHeader title="Stackd Dashboard" onMenuPress={() => setDrawerVisible(true)} />
       <FlatList
         contentContainerStyle={styles.content}
         data={recentExpenses}

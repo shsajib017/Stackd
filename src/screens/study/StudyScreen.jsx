@@ -12,6 +12,8 @@ import SubjectCard from '../../components/study/SubjectCard';
 import SectionHeader from '../../components/common/SectionHeader';
 import SideDrawer from '../../components/common/SideDrawer';
 
+import AppHeader from '../../components/common/AppHeader';
+
 /** Study Tab Home Screen */
 const StudyScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -39,24 +41,6 @@ const StudyScreen = React.memo(({ navigation }) => {
     return map;
   }, [sessions, subjects]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.headerMenuBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.6}
-        >
-          <Text style={styles.headerMenuIcon}>☰</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => (
-        <View style={styles.headerRightBadge}><Text style={styles.headerRightText}>⏱ {weeklyHours}h this week</Text></View>
-      ),
-    });
-  }, [navigation, weeklyHours]);
-
   const refreshData = useCallback(() => {
     fetchSessions();
     fetchStreaks();
@@ -78,6 +62,15 @@ const StudyScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <AppHeader
+        title="Study Hub"
+        onMenuPress={() => setDrawerVisible(true)}
+        rightElement={
+          <View style={styles.headerRightBadge}>
+            <Text style={styles.headerRightText}>⏱ {weeklyHours}h</Text>
+          </View>
+        }
+      />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <SectionHeader title="Today" actionLabel="+ Add" onAction={() => navigation.navigate('ScheduleScreen')} />
         {todaySessions.length === 0 ? (

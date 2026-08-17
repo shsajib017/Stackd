@@ -20,7 +20,7 @@ const HomeStack = React.memo(() => {
       <Stack.Screen
         name="HomeScreen"
         component={HomeScreen}
-        options={{ title: 'Stackd Dashboard' }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

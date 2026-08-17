@@ -1,39 +1,27 @@
-import React, { useLayoutEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors, fontSizes } from '../../config/theme';
 import SideDrawer from '../../components/common/SideDrawer';
+import AppHeader from '../../components/common/AppHeader';
 
 /** Profile and Settings Screen */
 const ProfileScreen = React.memo(({ navigation }) => {
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity
-          onPress={() => setDrawerVisible(true)}
-          style={styles.headerMenuBtn}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.6}
-        >
-          <Text style={styles.headerMenuIcon}>☰</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ProfileScreen</Text>
+      <AppHeader title="Profile & Settings" onMenuPress={() => setDrawerVisible(true)} />
+      <View style={styles.content}>
+        <Text style={styles.title}>ProfileScreen</Text>
+      </View>
       <SideDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)} navigation={navigation} />
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' },
-  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerMenuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: fontSizes.xl, color: colors.primary, fontWeight: 'bold' },
 });
 

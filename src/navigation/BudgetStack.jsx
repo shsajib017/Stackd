@@ -27,7 +27,7 @@ const BudgetStack = React.memo(() => {
         headerTitleAlign: 'center',
       }}
     >
-      <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ title: 'Budget & Expenses' }} />
+      <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} />
       <Stack.Screen name="AddExpenseScreen" component={AddExpenseScreen} options={{ title: 'Add Expense' }} />
       <Stack.Screen name="EditExpenseScreen" component={EditExpenseScreen} options={{ title: 'Edit Expense' }} />
       <Stack.Screen name="AddIncomeScreen" component={AddIncomeScreen} options={{ title: 'Add Income' }} />
