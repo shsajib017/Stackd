@@ -10,6 +10,7 @@ import { formatDate, formatDateForDB } from '../../utils/formatDate';
 import { validateIncome } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import AppHeader from '../../components/common/AppHeader';
 
 const SOURCE_ICONS = { Allowance: '💸', 'Part-time': '💼', Scholarship: '🎓', Other: '📦' };
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -61,11 +62,7 @@ const AddIncomeScreen = React.memo(({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, spacing.md) }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Income</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <AppHeader title="Add Income" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>

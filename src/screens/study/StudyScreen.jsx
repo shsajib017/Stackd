@@ -1,28 +1,49 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
 import useAuthStore from '../../store/useAuthStore';
 import useStudySessions from '../../hooks/useStudySessions';
 import useStreak from '../../hooks/useStreak';
+import usePomodoro from '../../hooks/usePomodoro';
 import { getSubjects } from '../../supabase/subjects';
 
+import AppHeader from '../../components/common/AppHeader';
+import StreakBadge from '../../components/study/StreakBadge';
+import ActivePomodoroCard from '../../components/study/ActivePomodoroCard';
+import SessionItem from '../../components/study/SessionItem';
 import SubjectCard from '../../components/study/SubjectCard';
+import StudyWeekChart from '../../components/study/StudyWeekChart';
 import SectionHeader from '../../components/common/SectionHeader';
+import EmptyState from '../../components/common/EmptyState';
+import SkeletonCard from '../../components/common/SkeletonCard';
 import SideDrawer from '../../components/common/SideDrawer';
 
-import AppHeader from '../../components/common/AppHeader';
-
-/** Study Tab Home Screen */
+/** Full Study Hub Screen for scheduling, active timers, subjects, and weekly progress. */
 const StudyScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [subjects, setSubjects] = useState([]);
-  const { sessions, weeklyStudyMinutes, fetchSessions } = useStudySessions();
+  const [subjectsLoading, setSubjectsLoading] = useState(false);
+
+  const { sessions, weeklyStudyMinutes, isLoading: sessionsLoading, fetchSessions, markComplete } = useStudySessions();
+  const { studyStreak, fetchStreaks, isLoading: streakLoading } = useStreak();
+  const { isRunning, isBreak, formattedTime } = usePomodoro();
+
   const weeklyHours = Math.round((weeklyStudyMinutes || 0) / 60);
-  const { fetchStreaks } = useStreak();
+
+  const refreshData = useCallback(() => {
+    fetchSessions();
+    fetchStreaks();
+    if (user?.id) {
+      setSubjectsLoading(true);
+      getSubjects(user.id).then((data) => setSubjects(data || [])).catch(() => setSubjects([])).finally(() => setSubjectsLoading(false));
+    }
+  }, [fetchSessions, fetchStreaks, user?.id]);
+
+  useFocusEffect(useCallback(() => { refreshData(); }, [refreshData]));
 
   const subjectProgressMap = useMemo(() => {
     const map = {};
@@ -41,81 +62,91 @@ const StudyScreen = React.memo(({ navigation }) => {
     return map;
   }, [sessions, subjects]);
 
-  const refreshData = useCallback(() => {
-    fetchSessions();
-    fetchStreaks();
-  }, [fetchSessions, fetchStreaks]);
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const todaySessions = useMemo(() => (sessions || []).filter((s) => s.date === todayStr), [sessions, todayStr]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-      if (user?.id) {
-        getSubjects(user.id).then((data) => setSubjects(data || [])).catch(() => setSubjects([]));
-      }
-    }, [refreshData, user?.id])
-  );
+  const renderHeader = useCallback(() => (
+    <View>
+      {streakLoading ? <SkeletonCard height={70} style={styles.mb} /> : <StreakBadge streak={studyStreak || 0} />}
 
-  const todaySessions = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return (sessions || []).filter((s) => s.date === today);
-  }, [sessions]);
+      {isRunning && (
+        <ActivePomodoroCard
+          isRunning={isRunning}
+          isBreak={isBreak}
+          formattedTime={formattedTime}
+          onPress={() => navigation.navigate('PomodoroModal')}
+        />
+      )}
+
+      <SectionHeader title="Today" actionLabel="+ Add" onAction={() => navigation.navigate('ScheduleScreen')} />
+      {sessionsLoading ? (
+        <SkeletonCard height={80} style={styles.mb} />
+      ) : todaySessions.length === 0 ? (
+        <EmptyState icon="📚" title="No sessions today" subtitle="Generate a schedule or add a session manually" actionLabel="Generate schedule" onAction={() => navigation.navigate('AutoScheduleScreen')} />
+      ) : (
+        todaySessions.map((item) => (
+          <SessionItem
+            key={item.id}
+            session={item}
+            subject={subjects.find((s) => s.id === item.subject_id)}
+            onToggleComplete={() => markComplete(item.id)}
+            onPress={() => navigation.navigate('PomodoroModal', { session: item, subjectId: item.subject_id, subjectName: item.subjects?.name })}
+          />
+        ))
+      )}
+
+      <SectionHeader title="My Subjects" actionLabel="Manage" onAction={() => navigation.navigate('SubjectsScreen')} style={styles.sectionMargin} />
+      {subjectsLoading ? (
+        <SkeletonCard height={110} style={styles.mb} />
+      ) : subjects.length === 0 ? (
+        <EmptyState icon="📖" title="No subjects yet" subtitle="Add your subjects to start tracking" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} />
+      ) : (
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={subjects}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <SubjectCard subject={item} progress={subjectProgressMap[item.id] || 0} onPress={() => navigation.navigate('SubjectDetailScreen', { subject: item })} />
+          )}
+          contentContainerStyle={styles.subjectsList}
+        />
+      )}
+
+      <SectionHeader title="This week" style={styles.sectionMargin} />
+      <StudyWeekChart sessions={sessions || []} />
+
+      <SectionHeader title="Quick Actions" style={styles.sectionMargin} />
+      <View style={styles.toolsRow}>
+        <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PomodoroModal')} activeOpacity={0.75}>
+          <Text style={styles.toolIcon}>⏱️</Text><Text style={styles.toolTitle}>Pomodoro</Text><Text style={styles.toolSub}>Focus timer</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PyqHubScreen')} activeOpacity={0.75}>
+          <Text style={styles.toolIcon}>📚</Text><Text style={styles.toolTitle}>PYQ Hub</Text><Text style={styles.toolSub}>Previous papers</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  ), [formattedTime, isBreak, isRunning, markComplete, navigation, sessions, sessionsLoading, streakLoading, studyStreak, subjectProgressMap, subjects, subjectsLoading, todaySessions]);
 
   return (
     <View style={styles.container}>
       <AppHeader
-        title="Study Hub"
+        title="Study"
         onMenuPress={() => setDrawerVisible(true)}
         rightElement={
           <View style={styles.headerRightBadge}>
-            <Text style={styles.headerRightText}>⏱ {weeklyHours}h</Text>
+            <Text style={styles.headerRightText}>⏱ {weeklyHours} hrs</Text>
           </View>
         }
       />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        <SectionHeader title="Today" actionLabel="+ Add" onAction={() => navigation.navigate('ScheduleScreen')} />
-        {todaySessions.length === 0 ? (
-          <View style={styles.emptyCard}><Text style={styles.emptyText}>No study sessions scheduled for today</Text></View>
-        ) : (
-          todaySessions.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.todayCard} onPress={() => navigation.navigate('PomodoroModal', { subjectId: item.subject_id, subjectName: item.subjects?.name })} activeOpacity={0.75}>
-              <View><Text style={styles.todayTitle}>{item.subjects?.name || 'Study Session'}</Text><Text style={styles.todaySub}>{item.duration_minutes || 25} mins</Text></View>
-              <Text style={styles.playIcon}>▶</Text>
-            </TouchableOpacity>
-          ))
-        )}
+      <FlatList
+        data={[]}
+        renderItem={null}
+        ListHeaderComponent={renderHeader}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      />
 
-        <SectionHeader title="My Subjects" actionLabel="Manage" onAction={() => navigation.navigate('SubjectsScreen')} style={styles.sectionMargin} />
-        {subjects.length === 0 ? (
-          <View style={styles.emptyCard}><Text style={styles.emptyText}>No subjects added yet</Text></View>
-        ) : (
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            data={subjects}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <SubjectCard
-                subject={item}
-                progress={subjectProgressMap[item.id] || 0}
-                onPress={() => navigation.navigate('SubjectDetailScreen', { subject: item })}
-              />
-            )}
-            contentContainerStyle={styles.subjectsList}
-          />
-        )}
-
-        <SectionHeader title="Quick Actions" style={styles.sectionMargin} />
-        <View style={styles.toolsRow}>
-          <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PomodoroModal')} activeOpacity={0.75}>
-            <Text style={styles.toolIcon}>⏱️</Text><Text style={styles.toolTitle}>Pomodoro</Text><Text style={styles.toolSub}>Focus timer</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PyqHubScreen')} activeOpacity={0.75}>
-            <Text style={styles.toolIcon}>📚</Text><Text style={styles.toolTitle}>PYQ Hub</Text><Text style={styles.toolSub}>Previous papers</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Floating Add Session Button */}
       <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 80 + 16 }]} onPress={() => navigation.navigate('ScheduleScreen')} activeOpacity={0.8}>
         <Text style={styles.fabIcon}>+</Text>
       </TouchableOpacity>
@@ -127,20 +158,13 @@ const StudyScreen = React.memo(({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerMenuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
-  headerRightBadge: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.sm + 2, paddingVertical: 4, borderRadius: borderRadius.full, marginRight: spacing.xs },
+  headerRightBadge: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.sm + 2, paddingVertical: 4, borderRadius: borderRadius.full },
   headerRightText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
   scrollContent: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.xxl + 80 },
-  sectionMargin: { marginTop: spacing.lg },
-  todayCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, marginVertical: 3, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
-  todayTitle: { fontSize: fontSizes.sm + 1, fontWeight: '700', color: colors.textPrimary },
-  todaySub: { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
-  playIcon: { fontSize: fontSizes.md, color: colors.primary, fontWeight: '800' },
+  sectionMargin: { marginTop: spacing.md },
+  mb: { marginBottom: spacing.sm },
   subjectsList: { gap: spacing.sm, paddingVertical: spacing.xs },
-  emptyCard: { backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, alignItems: 'center', marginVertical: spacing.xs, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  emptyText: { color: colors.textTertiary, fontSize: fontSizes.sm, fontWeight: '600' },
-  toolsRow: { flexDirection: 'row', gap: spacing.sm },
+  toolsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   toolCard: { flex: 1, backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.lg, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
   toolIcon: { fontSize: 24, marginBottom: 4 },
   toolTitle: { fontSize: fontSizes.sm + 1, fontWeight: '700', color: colors.textPrimary },

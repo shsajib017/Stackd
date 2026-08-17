@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
@@ -10,6 +10,7 @@ import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
 import StatusChip from '../../components/common/StatusChip';
 import SpendingChart from '../../components/budget/SpendingChart';
+import AppHeader from '../../components/common/AppHeader';
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const CAT_ICONS = { Food: '🍔', Transport: '🚌', Books: '📚', Tuition: '🎓', Entertainment: '🎮', Other: '📦' };
@@ -34,6 +35,7 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
   });
 
   const { totalSpent, totalIncome } = monthlyData;
+  const { hasPrevData, direction, percentChange, diffAmount } = comparisonWithLastMonth;
   const net = totalIncome - totalSpent;
 
   const sortedCategories = useMemo(() => {
@@ -60,39 +62,34 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
     Share.share({ message: msg });
   };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Spending Report',
-      headerRight: () => (
-        <TouchableOpacity onPress={() => exportRef.current?.()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.exportBtn}>📤</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   const noData = !isLoading && totalSpent === 0 && totalIncome === 0;
 
-  if (isLoading) return (
-    <View style={styles.container}><View style={styles.content}>
-      <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
-      <SkeletonCard height={50} style={styles.mb} /><SkeletonCard height={90} style={styles.mb} />
-      <SkeletonCard height={160} style={styles.mb} /><SkeletonCard height={120} />
-    </View></View>
-  );
-
-  if (noData) return (
-    <View style={styles.container}><View style={styles.content}>
-      <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
-      <EmptyState icon="📊" title="No data yet" subtitle={`No transactions in ${MONTHS[month - 1]} ${year}`} />
-    </View></View>
-  );
-
-  const { direction, percentChange, diffAmount, hasPrevData } = comparisonWithLastMonth;
-
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
+    <View style={styles.container}>
+      <AppHeader
+        title="Spending Report"
+        showBack
+        onBack={() => navigation.goBack()}
+        rightElement={
+          <TouchableOpacity onPress={() => exportRef.current?.()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Text style={styles.exportBtn}>📤</Text>
+          </TouchableOpacity>
+        }
+      />
+      {isLoading ? (
+        <View style={styles.content}>
+          <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
+          <SkeletonCard height={50} style={styles.mb} /><SkeletonCard height={90} style={styles.mb} />
+          <SkeletonCard height={160} style={styles.mb} /><SkeletonCard height={120} />
+        </View>
+      ) : noData ? (
+        <View style={styles.content}>
+          <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
+          <EmptyState icon="📊" title="No data yet" subtitle={`No transactions in ${MONTHS[month - 1]} ${year}`} />
+        </View>
+      ) : (
+        <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <MonthSelector date={selectedMonth} onPrev={() => changeMonth(-1)} onNext={() => changeMonth(1)} isCurrentMonth={isCurrentMonth} />
 
       {/* Overview Cards */}
       <View style={styles.statRow}>
@@ -143,7 +140,9 @@ const SpendingReportScreen = React.memo(({ navigation }) => {
       {/* Daily Spending Continuous Chart */}
       <SectionHeader title="Daily Spending" style={styles.mt} />
       <SpendingChart dailyData={chartDays} />
-    </ScrollView>
+        </ScrollView>
+      )}
+    </View>
   );
 });
 

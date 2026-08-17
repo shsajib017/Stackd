@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Markdown from 'react-native-markdown-display';
@@ -9,6 +9,7 @@ import { getReadingTime, getSavedAgoText, getWordCount, markdownStyles } from '.
 
 import ConfirmModal from '../../components/common/ConfirmModal';
 import EditorToolbar from '../../components/study/EditorToolbar';
+import AppHeader from '../../components/common/AppHeader';
 
 /** Markdown Note Editor with top action buttons beside title. */
 const NotesEditorScreen = React.memo(({ navigation, route }) => {
@@ -58,34 +59,26 @@ const NotesEditorScreen = React.memo(({ navigation, route }) => {
     if (!noteTitle && !noteContent) return;
 
     try {
-      setSaveStatus('saving');
+      if (!silent) setSaveStatus('saving');
       if (activeNoteIdRef.current) {
-        await saveNote({ id: activeNoteIdRef.current, title: noteTitle, content: noteContent, subject_id: subjectId });
-      } else if (subjectId) {
+        await saveNote(activeNoteIdRef.current, { title: noteTitle, content: noteContent });
+      } else {
         const created = await addNote(subjectId, { title: noteTitle, content: noteContent });
         if (created?.id) activeNoteIdRef.current = created.id;
       }
       setLastSavedAt(Date.now());
-      setSaveStatus('saved');
-      showToast(silent ? 'Note saved' : 'Note saved ✓', 'success');
-      setTimeout(() => { setSaveStatus('idle'); }, 2000);
+      if (!silent) {
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+        showToast('Note saved', 'success');
+      }
     } catch {
-      setSaveStatus('idle');
-      showToast('Failed to save note', 'error');
+      if (!silent) {
+        setSaveStatus('idle');
+        showToast('Failed to save note', 'error');
+      }
     }
   }, [addNote, saveNote, showToast, subjectId]);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: isEditMode ? 'Edit Note' : 'New Note',
-      headerLeft: () => (
-        <TouchableOpacity onPress={async () => { await handleSave(true); navigation.goBack(); }} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => null,
-    });
-  }, [handleSave, isEditMode, navigation]);
 
   useEffect(() => {
     const timer = setInterval(() => { handleSave(true); }, 30000);
@@ -113,6 +106,7 @@ const NotesEditorScreen = React.memo(({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title={isEditMode ? 'Edit Note' : 'New Note'} showBack onBack={async () => { await handleSave(true); navigation.goBack(); }} />
       <View style={styles.titleSection}>
         <View style={styles.titleRow}>
           <TextInput style={styles.titleInput} value={title} onChangeText={setTitle} placeholder="Untitled note" placeholderTextColor={colors.textTertiary} maxLength={100} autoFocus={!isEditMode} />

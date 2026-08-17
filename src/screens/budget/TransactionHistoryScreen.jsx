@@ -10,6 +10,7 @@ import { deleteIncome, getIncome } from '../../supabase/income';
 import EmptyState from '../../components/common/EmptyState';
 import TransactionFilters from '../../components/budget/TransactionFilters';
 import TransactionRow from '../../components/budget/TransactionRow';
+import AppHeader from '../../components/common/AppHeader';
 
 /**
  * Transaction History Screen displaying filtered, searchable transaction list.
@@ -95,6 +96,7 @@ export default function TransactionHistoryScreen() {
 
   return (
     <View style={styles.screen}>
+      <AppHeader title="Transaction History" showBack onBack={() => navigation.goBack()} />
       <TransactionFilters
         searchQuery={search}
         onSearchChange={setSearch}

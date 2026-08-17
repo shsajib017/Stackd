@@ -14,6 +14,7 @@ import { validateExpense } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Input from '../../components/common/Input';
+import AppHeader from '../../components/common/AppHeader';
 
 const CATEGORY_ICONS = { Food: '🍔', Transport: '🚌', Books: '📚', Tuition: '🎓', Entertainment: '🎮', Other: '📦' };
 
@@ -86,6 +87,7 @@ const EditExpenseScreen = React.memo(({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title="Edit Expense" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>
           <Text style={styles.currencyPrefix}>৳</Text>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { addBatchTopics } from '../../supabase/topics';
 
 import Button from '../../components/common/Button';
 import TopicResultsList from '../../components/study/TopicResultsList';
+import AppHeader from '../../components/common/AppHeader';
 
 const LOADING_MESSAGES = ['Reading your syllabus...', 'Identifying topics...', 'Estimating study time...'];
 
@@ -39,16 +40,7 @@ const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Analyse Syllabus',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+
 
   useEffect(() => {
     if (!isAnalysing) return;
@@ -99,7 +91,9 @@ const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
   const canAnalyse = activeTab === 'Upload PDF' ? Boolean(selectedFile) : pastedText.trim().length >= 100;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <View style={styles.screen}>
+      <AppHeader title="Analyse Syllabus" showBack onBack={() => navigation.goBack()} />
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.subjectBadge}>
         <View style={[styles.subDot, { backgroundColor: activeSubject.color || colors.primary }]} />
         <Text style={styles.subName} numberOfLines={1}>{activeSubject.name || 'Subject'}</Text>
@@ -151,12 +145,14 @@ const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
           <Button label="Discard" variant="secondary" onPress={() => setTopics(null)} fullWidth style={styles.discardBtn} />
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scrollContainer: { flex: 1 },
   headerBtn: { paddingHorizontal: spacing.sm },
   headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
   content: { padding: spacing.md, paddingBottom: 80 },

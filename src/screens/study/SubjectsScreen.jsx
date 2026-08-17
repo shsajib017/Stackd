@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActionSheetIOS, Alert, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
 import StatusChip from '../../components/common/StatusChip';
 import ProgressRing from '../../components/study/ProgressRing';
+import AppHeader from '../../components/common/AppHeader';
 
 /** Subjects Management and Overview Screen. */
 const SubjectsScreen = React.memo(({ navigation }) => {
@@ -24,18 +25,6 @@ const SubjectsScreen = React.memo(({ navigation }) => {
   const { sessions, isLoading, fetchSessions } = useStudySessions();
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'My Subjects',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => null,
-    });
-  }, [navigation]);
 
   useFocusEffect(useCallback(() => { fetchSessions(); }, [fetchSessions]));
 
@@ -137,6 +126,7 @@ const SubjectsScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.screen}>
+      <AppHeader title="My Subjects" showBack onBack={() => navigation.goBack()} />
       <FlatList data={isLoading ? [] : (subjects || [])} keyExtractor={(item) => item.id} ListHeaderComponent={renderHeader} renderItem={renderSubjectCard} ListEmptyComponent={!isLoading ? <EmptyState icon="📚" title="No subjects added yet" subtitle="Add your subjects to start planning your study schedule" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} /> : null} contentContainerStyle={[styles.content, { paddingBottom: fabBottom + 60 }]} showsVerticalScrollIndicator={false} />
       <TouchableOpacity style={[styles.fab, { bottom: fabBottom }]} onPress={() => navigation.navigate('AddSubjectScreen')} activeOpacity={0.85}><Text style={styles.fabIcon}>+</Text></TouchableOpacity>
       <ConfirmModal visible={Boolean(deleteTarget)} title="Delete Subject?" message={`Are you sure you want to delete "${deleteTarget?.name}"? All associated sessions will also be deleted.`} confirmLabel="Delete" isDanger onConfirm={handleDeleteConfirm} onCancel={() => setDeleteTarget(null)} loading={isDeleting} />

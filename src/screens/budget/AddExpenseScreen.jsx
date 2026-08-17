@@ -12,6 +12,7 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import CategorySelector from '../../components/budget/CategorySelector';
 import RecurringSelector from '../../components/budget/RecurringSelector';
+import AppHeader from '../../components/common/AppHeader';
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -71,11 +72,7 @@ const AddExpenseScreen = React.memo(({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, spacing.md) }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Expense</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <AppHeader title="Add Expense" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>

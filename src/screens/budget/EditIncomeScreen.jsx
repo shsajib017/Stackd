@@ -14,6 +14,7 @@ import { validateIncome } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Input from '../../components/common/Input';
+import AppHeader from '../../components/common/AppHeader';
 
 const SOURCE_ICONS = { Allowance: '💸', 'Part-time': '💼', Scholarship: '🎓', Other: '📦' };
 
@@ -80,6 +81,7 @@ const EditIncomeScreen = React.memo(({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title="Edit Income" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: scrollBottomPadding }]} showsVerticalScrollIndicator={false}>
         <View style={styles.amountContainer}>
           <Text style={styles.currencyPrefix}>৳</Text>

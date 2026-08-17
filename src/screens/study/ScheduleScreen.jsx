@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
@@ -12,6 +12,7 @@ import AddSessionSheet from '../../components/study/AddSessionSheet';
 import DayTabsRow from '../../components/study/DayTabsRow';
 import SessionItem from '../../components/study/SessionItem';
 import WeekSummaryBar from '../../components/study/WeekSummaryBar';
+import AppHeader from '../../components/common/AppHeader';
 
 const getWeekDays = (baseDate = new Date()) => {
   const current = new Date(baseDate);
@@ -46,22 +47,6 @@ const ScheduleScreen = React.memo(({ navigation }) => {
   }, [weekOffset]);
 
   const weekDays = useMemo(() => getWeekDays(baseWeekDate), [baseWeekDate]);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Schedule',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('AutoScheduleScreen')} style={styles.genBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} activeOpacity={0.7}>
-          <Text style={styles.genBtnText}>⚡ Generate</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   useFocusEffect(useCallback(() => { fetchSessions(); }, [fetchSessions]));
 
@@ -150,6 +135,16 @@ const ScheduleScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.screen}>
+      <AppHeader
+        title="Schedule"
+        showBack
+        onBack={() => navigation.goBack()}
+        rightElement={
+          <TouchableOpacity onPress={() => navigation.navigate('AutoScheduleScreen')} style={styles.genBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} activeOpacity={0.7}>
+            <Text style={styles.genBtnText}>⚡ Generate</Text>
+          </TouchableOpacity>
+        }
+      />
       <FlatList
         data={isLoading ? [] : selectedDaySessions}
         keyExtractor={(item) => item.id}

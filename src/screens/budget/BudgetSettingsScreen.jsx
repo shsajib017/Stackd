@@ -10,6 +10,7 @@ import { updateProfile } from '../../supabase/profiles';
 import { EXPENSE_CATEGORIES } from '../../utils/constants';
 import { formatBDT } from '../../utils/formatCurrency';
 import Button from '../../components/common/Button';
+import AppHeader from '../../components/common/AppHeader';
 
 const CATEGORY_ICONS = { Food: '🍔', Transport: '🚌', Books: '📚', Tuition: '🎓', Entertainment: '🎮', Other: '📦' };
 
@@ -97,11 +98,7 @@ const BudgetSettingsScreen = React.memo(({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: Math.max(insets.top, spacing.md) }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Budget Settings</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <AppHeader title="Budget Settings" showBack onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.sectionCard}>

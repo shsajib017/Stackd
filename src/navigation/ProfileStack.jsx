@@ -16,6 +16,7 @@ const ProfileStack = React.memo(() => {
   return (
     <Stack.Navigator
       screenOptions={{
+        headerShown: false,
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.textPrimary,
         headerTitleAlign: 'center',

@@ -9,6 +9,7 @@ import { validateSavingsGoal } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import Input from '../../components/common/Input';
+import AppHeader from '../../components/common/AppHeader';
 
 /** Dedicated Screen for Editing and Deleting a Savings Goal. */
 const EditGoalScreen = React.memo(({ navigation, route }) => {
@@ -84,6 +85,7 @@ const EditGoalScreen = React.memo(({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title="Edit Goal" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Input label="Goal name" value={title} onChangeText={setTitle} placeholder="e.g. New laptop, Emergency fund" autoCapitalize="words" />
 

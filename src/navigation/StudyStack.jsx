@@ -18,22 +18,16 @@ const Stack = createNativeStackNavigator();
  */
 const StudyStack = React.memo(() => {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.textPrimary,
-        headerTitleAlign: 'center',
-      }}
-    >
-      <Stack.Screen name="StudyScreen" component={StudyScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="SubjectsScreen" component={SubjectsScreen} options={{ title: 'Subjects' }} />
-      <Stack.Screen name="AddSubjectScreen" component={AddSubjectScreen} options={{ title: 'Add Subject' }} />
-      <Stack.Screen name="SubjectDetailScreen" component={SubjectDetailScreen} options={{ title: 'Subject Details' }} />
-      <Stack.Screen name="ScheduleScreen" component={ScheduleScreen} options={{ title: 'Schedule' }} />
-      <Stack.Screen name="AutoScheduleScreen" component={AutoScheduleScreen} options={{ title: 'Smart Schedule' }} />
-      <Stack.Screen name="NotesEditorScreen" component={NotesEditorScreen} options={{ title: 'Notes' }} />
-      <Stack.Screen name="SyllabusUploadScreen" component={SyllabusUploadScreen} options={{ title: 'AI Syllabus' }} />
-      <Stack.Screen name="PYQUploadScreen" component={PYQUploadScreen} options={{ title: 'PYQ Hot Topics' }} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="StudyScreen" component={StudyScreen} />
+      <Stack.Screen name="SubjectsScreen" component={SubjectsScreen} />
+      <Stack.Screen name="AddSubjectScreen" component={AddSubjectScreen} />
+      <Stack.Screen name="SubjectDetailScreen" component={SubjectDetailScreen} />
+      <Stack.Screen name="ScheduleScreen" component={ScheduleScreen} />
+      <Stack.Screen name="AutoScheduleScreen" component={AutoScheduleScreen} />
+      <Stack.Screen name="NotesEditorScreen" component={NotesEditorScreen} />
+      <Stack.Screen name="SyllabusUploadScreen" component={SyllabusUploadScreen} />
+      <Stack.Screen name="PYQUploadScreen" component={PYQUploadScreen} />
     </Stack.Navigator>
   );
 });

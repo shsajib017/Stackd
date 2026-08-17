@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +15,7 @@ import HotTopicsTab from '../../components/study/HotTopicsTab';
 import MaterialsTab from '../../components/study/MaterialsTab';
 import NotesTab from '../../components/study/NotesTab';
 import ScheduleTab from '../../components/study/ScheduleTab';
+import AppHeader from '../../components/common/AppHeader';
 
 const TABS = ['Schedule', 'Notes', 'Materials', 'Hot Topics'];
 
@@ -33,20 +34,6 @@ const SubjectDetailScreen = React.memo(({ navigation, route }) => {
 
   const subjectSessions = useMemo(() => (sessions || []).filter((s) => s.subject_id === subject.id), [sessions, subject.id]);
   const completedCount = useMemo(() => subjectSessions.filter((s) => s.completed).length, [subjectSessions]);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: subject.name || 'Subject Details',
-      headerStyle: { backgroundColor: subject.color || colors.primary },
-      headerTintColor: colors.surface,
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-      headerRight: () => null,
-    });
-  }, [navigation, subject]);
 
   const refreshAllData = useCallback(async () => {
     if (!subject?.id) return;
@@ -86,6 +73,7 @@ const SubjectDetailScreen = React.memo(({ navigation, route }) => {
 
   return (
     <View style={styles.screen}>
+      <AppHeader title={subject.name || 'Subject Details'} showBack onBack={() => navigation.goBack()} />
       {/* Stats Row */}
       <View style={styles.statsRow}>
         <View style={styles.statWrap}><StatCard icon="⏳" value={examStatLabel} label="Exam" color={colors.accent} /></View>

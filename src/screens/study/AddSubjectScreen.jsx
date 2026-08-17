@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import Input from '../../components/common/Input';
 import StatusChip from '../../components/common/StatusChip';
 import ColorPicker, { DEFAULT_PALETTE } from '../../components/study/ColorPicker';
 import DifficultyRating from '../../components/study/DifficultyRating';
+import AppHeader from '../../components/common/AppHeader';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -40,17 +41,6 @@ const AddSubjectScreen = React.memo(({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: isEditMode ? 'Edit Subject' : 'Add Subject',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [isEditMode, navigation]);
 
   useFocusEffect(useCallback(() => {
     if (!isEditMode) { setName(''); setExamDate(null); setCreditHours(''); setDifficulty(3); setColor(DEFAULT_PALETTE[0]); setErrorMessage(null); }
@@ -107,6 +97,7 @@ const AddSubjectScreen = React.memo(({ navigation, route }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title={isEditMode ? 'Edit Subject' : 'Add Subject'} showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 80 }]} showsVerticalScrollIndicator={false}>
         <Input label="Subject name" value={name} onChangeText={setName} placeholder="e.g. Data Structures, Calculus, English" autoCapitalize="words" />
         <Text style={styles.fieldLabel}>Exam date</Text>

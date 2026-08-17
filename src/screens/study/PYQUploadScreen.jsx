@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { addBatchTopics } from '../../supabase/topics';
 import Button from '../../components/common/Button';
 import HotTopicResultsList from '../../components/study/HotTopicResultsList';
 import SelectedFilesList from '../../components/study/SelectedFilesList';
+import AppHeader from '../../components/common/AppHeader';
 
 const LOADING_MESSAGES = ['Reading exam papers...', 'Finding patterns...', 'Ranking topics by frequency...'];
 
@@ -39,16 +40,7 @@ const PYQUploadScreen = React.memo(({ navigation, route }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Analyse Past Papers',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
+
 
   useFocusEffect(useCallback(() => { fetchSessions(); }, [fetchSessions]));
 
@@ -104,7 +96,9 @@ const PYQUploadScreen = React.memo(({ navigation, route }) => {
   const canAnalyse = activeTab === 'Upload PDF' ? selectedFiles.length > 0 : pastedText.trim().length >= 100;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <View style={styles.screen}>
+      <AppHeader title="Analyse Past Papers" showBack onBack={() => navigation.goBack()} />
+      <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.subjectBadge}>
         <View style={[styles.subDot, { backgroundColor: activeSubject.color || colors.primary }]} />
         <Text style={styles.subName} numberOfLines={1}>{activeSubject.name || 'Subject'}</Text>
@@ -157,12 +151,14 @@ const PYQUploadScreen = React.memo(({ navigation, route }) => {
           <Button label="Discard" variant="secondary" onPress={() => setResults(null)} fullWidth style={styles.discardBtn} />
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scrollContainer: { flex: 1 },
   headerBtn: { paddingHorizontal: spacing.sm },
   headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
   content: { padding: spacing.md, paddingBottom: 80 },

@@ -13,6 +13,7 @@ import EmptyState from '../../components/common/EmptyState';
 import ProgressBar from '../../components/common/ProgressBar';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
+import AppHeader from '../../components/common/AppHeader';
 
 const GoalCard = React.memo(({ goal, onCardPress, onAddFundsPress }) => {
   const current = Number(goal.current_amount || 0);
@@ -85,11 +86,7 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
 
   return (
     <View style={styles.screen}>
-      {/* <View style={[styles.header, { paddingTop: Math.max(insets.top, spacing.md) }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}><Text style={styles.backArrow}>←</Text></TouchableOpacity>
-        <Text style={styles.headerTitle}>Savings Goals</Text>
-        <View style={styles.headerSpacer} />
-      </View> */}
+      <AppHeader title="Savings Goals" showBack onBack={() => navigation.goBack()} />
 
       <FlatList
         data={isLoading ? [] : (goals || [])}

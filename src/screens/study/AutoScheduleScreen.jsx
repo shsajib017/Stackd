@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
 import DailyHoursInput from '../../components/study/DailyHoursInput';
 import SchedulePreview from '../../components/study/SchedulePreview';
+import AppHeader from '../../components/common/AppHeader';
 
 const LENGTHS = [25, 45, 60];
 const DEFAULT_HOURS = { monday: 4, tuesday: 4, wednesday: 4, thursday: 4, friday: 4, saturday: 2, sunday: 2 };
@@ -47,17 +48,6 @@ const AutoScheduleScreen = React.memo(({ navigation }) => {
     return minDays;
   }, [subjects]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Generate Schedule',
-      headerLeft: () => (
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.headerBackIcon}>←</Text>
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
-
   const handleHourChange = useCallback((dayKey, val) => {
     setAvailableHours((prev) => ({ ...prev, [dayKey]: val }));
   }, []);
@@ -81,7 +71,9 @@ const AutoScheduleScreen = React.memo(({ navigation }) => {
   }, [applySchedule, generatedSessions, navigation, showToast]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 220 }]} showsVerticalScrollIndicator={false}>
+    <View style={styles.screen}>
+      <AppHeader title="Generate Schedule" showBack onBack={() => navigation.goBack()} />
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 80 }]} showsVerticalScrollIndicator={false}>
       {/* Intro Card */}
       <View style={styles.introCard}>
         <Text style={styles.introTitle}>Smart Timetable Generator</Text>
@@ -142,12 +134,13 @@ const AutoScheduleScreen = React.memo(({ navigation }) => {
           <Button label="Regenerate" variant="secondary" onPress={handleGenerate} fullWidth style={styles.regenBtn} />
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: colors.background },
   headerBtn: { paddingHorizontal: spacing.sm },
   headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
   content: { padding: spacing.md, paddingBottom: 100 },

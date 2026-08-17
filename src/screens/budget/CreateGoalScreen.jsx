@@ -8,6 +8,7 @@ import { formatDate, formatDateForDB } from '../../utils/formatDate';
 import { validateSavingsGoal } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import AppHeader from '../../components/common/AppHeader';
 
 /** Dedicated Screen for Creating a New Savings Goal. */
 const CreateGoalScreen = React.memo(({ navigation }) => {
@@ -65,6 +66,7 @@ const CreateGoalScreen = React.memo(({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <AppHeader title="Create Goal" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Input label="Goal name" value={title} onChangeText={setTitle} placeholder="e.g. New laptop, Emergency fund" autoCapitalize="words" />
 
