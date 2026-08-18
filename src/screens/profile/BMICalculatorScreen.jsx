@@ -89,7 +89,7 @@ const BMICalculatorScreen = React.memo(({ navigation }) => {
   return (
     <ScreenWrapper>
       <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <AppHeader title="BMI Calculator" showBack onBack={() => navigation.goBack()} />
+        <AppHeader title="BMI Calculator" showBack onBack={() => navigation.navigate('ProfileScreen')} />
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 120 }]} showsVerticalScrollIndicator={false}>
           <View style={[styles.unitRow, { backgroundColor: theme.colors.surface, borderColor: `${theme.colors.textTertiary}25` }]}>
             <TouchableOpacity style={[styles.unitBtn, unit === 'metric' && { backgroundColor: theme.colors.primary }]} onPress={() => handleUnitSwitch('metric')}>

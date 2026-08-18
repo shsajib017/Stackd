@@ -81,6 +81,26 @@ export const getCurrentSession = async () => {
 };
 
 /**
+ * Updates the current user's password.
+ * Uses native current_password support (supabase-js v2.102+).
+ * @param {string} newPassword - New password (min 6 chars).
+ * @param {string} currentPassword - Current password for verification.
+ * @returns {Promise<object>} Supabase user response.
+ */
+export const updateUserPassword = async (newPassword, currentPassword) => {
+  try {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
+    });
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    throw new Error(err.message || 'Failed to update password');
+  }
+};
+
+/**
  * Subscribes to auth state changes (login, logout, token refresh).
  * @param {Function} callback - Called with (event, session).
  * @returns {Function} Unsubscribe function.
@@ -89,3 +109,4 @@ export const onAuthStateChange = (callback) => {
   const { data: { subscription } } = supabase.auth.onAuthStateChange(callback);
   return subscription.unsubscribe;
 };
+

@@ -76,7 +76,7 @@ const GoalsScreen = React.memo(({ navigation }) => {
   return (
     <ScreenWrapper>
       <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <AppHeader title="My Goals" showBack onBack={() => navigation.goBack()} />
+        <AppHeader title="My Goals" showBack onBack={() => navigation.navigate('ProfileScreen')} />
         <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 120 }]} showsVerticalScrollIndicator={false}>
           {profile?.bmi ? (
             <View style={styles.bmiBanner}><StatusChip label="Goals set from your BMI results" type="info" size="sm" /></View>

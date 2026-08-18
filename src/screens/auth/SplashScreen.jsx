@@ -3,6 +3,8 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../config/ThemeContext';
 import { getCurrentSession } from '../../supabase/auth';
+import { getProfile } from '../../supabase/profiles';
+import useAuthStore from '../../store/useAuthStore';
 import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 /**
@@ -22,7 +24,13 @@ const SplashScreen = React.memo(({ navigation }) => {
 
         if (!isMounted) return;
 
-        if (session) {
+        if (session?.user) {
+          // Set user + profile in store so the app has auth data
+          useAuthStore.getState().setUser(session.user);
+          try {
+            const profile = await getProfile(session.user.id);
+            if (profile) useAuthStore.getState().setProfile(profile);
+          } catch {}
           navigation.replace('AppNavigator');
         } else if (!hasOnboarded) {
           navigation.replace('OnboardingScreen');
@@ -49,36 +57,36 @@ const SplashScreen = React.memo(({ navigation }) => {
   }, [navigation]);
 
   return (
-    <ScreenWrapper noPadding edges={['top', 'bottom']} style={styles.centerContainer}>
-      <View style={styles.logoContainer}>
-        <Text style={[styles.appName, { color: theme.colors.primary }]}>Stackd</Text>
-        <Text style={[styles.tagline, { color: theme.colors.textSecondary }]}>Study • Budget • Fuel</Text>
+    <ScreenWrapper>
+      <View style={styles.container}>
+        <Text style={[styles.logo, { color: theme.colors.primary }]}>Stackd</Text>
+        <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
+        <Text style={[styles.tagline, { color: theme.colors.textSecondary }]}>
+          Your student life, organised.
+        </Text>
       </View>
-      <ActivityIndicator size="large" color={theme.colors.primary} style={styles.loader} />
     </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  centerContainer: {
+  container: {
+    flex: 1,
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
   },
-  logoContainer: {
-    alignItems: 'center',
+  logo: {
+    fontSize: 36,
+    fontWeight: '900',
+    letterSpacing: -1,
   },
-  appName: {
-    fontSize: 40,
-    fontWeight: '800',
-    letterSpacing: 1.5,
+  loader: {
+    marginTop: 24,
+    marginBottom: 12,
   },
   tagline: {
     fontSize: 14,
-    marginTop: 4,
-    letterSpacing: 0.5,
-  },
-  loader: {
-    marginTop: 32,
+    fontWeight: '500',
   },
 });
 
