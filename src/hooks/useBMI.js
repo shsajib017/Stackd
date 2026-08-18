@@ -46,12 +46,12 @@ export const useBMI = () => {
         try {
           setIsSaving(true);
           const updated = await updateProfile(user.id, {
-            weight_kg: Number(weightKg),
-            height_cm: Number(heightCm),
+            weight: Number(weightKg),
+            height: Number(heightCm),
             bmi: calculatedBmi,
             bmi_category: calculatedCategory,
             calorie_target: targetCal,
-            fitness_goal: goal,
+            goal_type: goal,
           });
           setProfile(updated);
         } catch {

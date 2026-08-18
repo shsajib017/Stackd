@@ -10,11 +10,8 @@ import ConfirmModal from './ConfirmModal';
 
 /** Searchable Settings List for SideDrawer */
 const DrawerSettings = React.memo(({ navigation, onClose, searchQuery = '' }) => {
-  const profile = useAuthStore((s) => s.profile);
-  const setProfile = useAuthStore((s) => s.setProfile);
-  const clearAuth = useAuthStore((s) => s.clearAuth);
-  const monthlyLimit = useBudgetStore((s) => s.monthlyLimit);
-  const setMonthlyLimit = useBudgetStore((s) => s.setMonthlyLimit);
+  const { profile, setProfile, clearAuth } = useAuthStore();
+  const { monthlyLimit, setMonthlyLimit } = useBudgetStore();
   const showToast = useUIStore((s) => s.showToast);
 
   const [editingBudget, setEditingBudget] = useState(false);
@@ -69,6 +66,12 @@ const DrawerSettings = React.memo(({ navigation, onClose, searchQuery = '' }) =>
         { id: 's1', type: 'editable', label: 'Daily study hours', value: `${profile?.daily_study_hours || 4} hrs`, isEditing: editingStudy, editVal: studyValue, onEdit: () => { setStudyValue(String(profile?.daily_study_hours || 4)); setEditingStudy(true); }, onChangeVal: setStudyValue, onSave: handleSaveStudy, suffix: 'hrs' },
         { id: 's2', type: 'pills', label: 'Pomodoro length', options: [25, 45, 60], current: pomodoroLength, onSelect: setPomodoroLength },
         { id: 's3', type: 'toggle', label: 'Study reminders', value: profile?.study_reminders !== false, onToggle: (v) => setProfile({ ...(profile || {}), study_reminders: v }) },
+      ],
+    },
+    {
+      title: 'MEALS', color: colors.success,
+      items: [
+        { id: 'm1', type: 'link', label: 'My Custom Foods', onPress: () => { onClose(); navigation.navigate('MyFoodsScreen'); } },
       ],
     },
     {
