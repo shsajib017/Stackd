@@ -1,17 +1,19 @@
 import React, { useCallback, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useSavings from '../../hooks/useSavings';
 import useUIStore from '../../store/useUIStore';
 import { formatDate, formatDateForDB } from '../../utils/formatDate';
 import { validateSavingsGoal } from '../../utils/validateForms';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 /** Dedicated Screen for Creating a New Savings Goal. */
 const CreateGoalScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const { addGoal } = useSavings();
   const showToast = useUIStore((state) => state.showToast);
 
@@ -65,64 +67,80 @@ const CreateGoalScreen = React.memo(({ navigation }) => {
   }, []);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <AppHeader title="Create Goal" showBack onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Input label="Goal name" value={title} onChangeText={setTitle} placeholder="e.g. New laptop, Emergency fund" autoCapitalize="words" />
+    <ScreenWrapper>
+      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <AppHeader title="Create Goal" showBack onBack={() => navigation.goBack()} />
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <Input label="Goal name" value={title} onChangeText={setTitle} placeholder="e.g. New laptop, Emergency fund" autoCapitalize="words" />
 
-        <Text style={styles.fieldLabel}>Target amount</Text>
-        <View style={styles.amountInputRow}>
-          <Text style={styles.currencyPrefix}>৳</Text>
-          <TextInput style={styles.amountInput} value={targetAmount} onChangeText={setTargetAmount} placeholder="10000" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
-        </View>
-
-        <Text style={styles.fieldLabel}>Starting amount (optional)</Text>
-        <View style={styles.amountInputRow}>
-          <Text style={styles.currencyPrefix}>৳</Text>
-          <TextInput style={styles.amountInput} value={currentAmount} onChangeText={setCurrentAmount} placeholder="0" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
-        </View>
-
-        <View style={styles.switchRow}>
-          <Text style={styles.switchLabel}>Set target deadline</Text>
-          <Switch value={hasDeadline} onValueChange={setHasDeadline} trackColor={{ false: colors.textTertiary, true: colors.primary }} />
-        </View>
-
-        {hasDeadline && (
-          <View style={styles.datePickerCard}>
-            <Text style={styles.dateDisplay}>📅 {formatDate(deadlineDate)}</Text>
-            <View style={styles.quickDateRow}>
-              {[ { l: '1 mo', m: 1 }, { l: '3 mo', m: 3 }, { l: '6 mo', m: 6 }, { l: '1 yr', m: 12 } ].map((opt) => (
-                <TouchableOpacity key={opt.l} onPress={() => adjustDeadline(opt.m)} style={styles.quickDateBtn}>
-                  <Text style={styles.quickDateText}>+{opt.l}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+          <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>Target amount</Text>
+          <View style={[styles.amountInputRow, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
+            <Text style={[styles.currencyPrefix, { color: theme.colors.primary }]}>৳</Text>
+            <TextInput
+              style={[styles.amountInput, { color: theme.colors.textPrimary }]}
+              value={targetAmount}
+              onChangeText={setTargetAmount}
+              placeholder="10000"
+              placeholderTextColor={theme.colors.textTertiary}
+              keyboardType="decimal-pad"
+            />
           </View>
-        )}
 
-        {errorMessage ? <Text style={styles.errorBanner}>{errorMessage}</Text> : null}
-        <Button label="Save goal" onPress={handleSave} loading={isLoading} fullWidth style={styles.saveBtn} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <Text style={[styles.fieldLabel, { color: theme.colors.textPrimary }]}>Starting amount (optional)</Text>
+          <View style={[styles.amountInputRow, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
+            <Text style={[styles.currencyPrefix, { color: theme.colors.primary }]}>৳</Text>
+            <TextInput
+              style={[styles.amountInput, { color: theme.colors.textPrimary }]}
+              value={currentAmount}
+              onChangeText={setCurrentAmount}
+              placeholder="0"
+              placeholderTextColor={theme.colors.textTertiary}
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+          <View style={[styles.switchRow, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
+            <Text style={[styles.switchLabel, { color: theme.colors.textPrimary }]}>Set target deadline</Text>
+            <Switch value={hasDeadline} onValueChange={setHasDeadline} trackColor={{ false: theme.colors.textTertiary, true: theme.colors.primary }} />
+          </View>
+
+          {hasDeadline && (
+            <View style={[styles.datePickerCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
+              <Text style={[styles.dateDisplay, { color: theme.colors.textPrimary }]}>📅 {formatDate(deadlineDate)}</Text>
+              <View style={styles.quickDateRow}>
+                {[ { l: '1 mo', m: 1 }, { l: '3 mo', m: 3 }, { l: '6 mo', m: 6 }, { l: '1 yr', m: 12 } ].map((opt) => (
+                  <TouchableOpacity key={opt.l} onPress={() => adjustDeadline(opt.m)} style={[styles.quickDateBtn, { backgroundColor: `${theme.colors.primary}15`, borderRadius: theme.borderRadius.sm }]}>
+                    <Text style={[styles.quickDateText, { color: theme.colors.primary }]}>+{opt.l}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {errorMessage ? <Text style={[styles.errorBanner, { color: theme.colors.error }]}>{errorMessage}</Text> : null}
+          <Button label="Save goal" onPress={handleSave} loading={isLoading} fullWidth style={styles.saveBtn} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  scrollContent: { padding: spacing.md, paddingBottom: 130 },
-  fieldLabel: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs, marginTop: spacing.sm },
-  amountInputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, paddingHorizontal: spacing.md, marginBottom: spacing.sm },
-  currencyPrefix: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.primary, marginRight: spacing.xs },
-  amountInput: { flex: 1, paddingVertical: spacing.sm + 2, fontSize: fontSizes.md, color: colors.textPrimary, fontWeight: '600' },
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, marginVertical: spacing.sm },
-  switchLabel: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
-  datePickerCard: { backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, marginBottom: spacing.md },
-  dateDisplay: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm },
-  quickDateRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.xs },
-  quickDateBtn: { flex: 1, backgroundColor: `${colors.primary}15`, paddingVertical: spacing.xs + 2, alignItems: 'center', borderRadius: borderRadius.sm },
-  quickDateText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
-  errorBanner: { fontSize: fontSizes.xs, color: colors.error, fontWeight: '600', textAlign: 'center', marginVertical: spacing.xs },
-  saveBtn: { marginTop: spacing.md },
+  flexOne: { flex: 1 },
+  scrollContent: { paddingVertical: 8, paddingBottom: 130 },
+  fieldLabel: { fontSize: 12, fontWeight: '700', marginBottom: 4, marginTop: 8 },
+  amountInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 16, marginBottom: 8 },
+  currencyPrefix: { fontSize: 16, fontWeight: '800', marginRight: 4 },
+  amountInput: { flex: 1, paddingVertical: 10, fontSize: 14, fontWeight: '600' },
+  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 1, marginVertical: 8 },
+  switchLabel: { fontSize: 12, fontWeight: '600' },
+  datePickerCard: { padding: 16, borderWidth: 1, marginBottom: 16 },
+  dateDisplay: { fontSize: 12, fontWeight: '700', textAlign: 'center', marginBottom: 8 },
+  quickDateRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
+  quickDateBtn: { flex: 1, paddingVertical: 6, alignItems: 'center' },
+  quickDateText: { fontSize: 10, fontWeight: '700' },
+  errorBanner: { fontSize: 11, fontWeight: '600', textAlign: 'center', marginVertical: 4 },
+  saveBtn: { marginTop: 16 },
 });
 
 export default CreateGoalScreen;

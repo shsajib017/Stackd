@@ -1,12 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuth from '../../hooks/useAuth';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 /**
  * Forgot Password screen to trigger password recovery emails.
  */
 const ForgotPasswordScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const { resetPassword, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,64 +31,79 @@ const ForgotPasswordScreen = React.memo(({ navigation }) => {
   const handleBack = useCallback(() => navigation.goBack(), [navigation]);
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}><Text style={styles.backText}>← Back</Text></TouchableOpacity>
+    <ScreenWrapper>
+      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+        <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
+      </TouchableOpacity>
       <View style={styles.header}>
-        <Text style={styles.title}>Reset password</Text>
-        <Text style={styles.subtitle}>Enter your email and we'll send you a reset link</Text>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Reset password</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Enter your email and we'll send you a reset link</Text>
       </View>
 
       {isSuccess ? (
-        <View style={styles.successCard}>
+        <View style={[styles.successCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg }]}>
           <Text style={styles.successEmoji}>✅</Text>
-          <Text style={styles.successTitle}>Reset link sent to {email.trim()}</Text>
-          <Text style={styles.successText}>Check your inbox and follow the instructions to reset your password</Text>
+          <Text style={[styles.successTitle, { color: theme.colors.textPrimary }]}>Reset link sent to {email.trim()}</Text>
+          <Text style={[styles.successText, { color: theme.colors.textSecondary }]}>Check your inbox and follow the instructions to reset your password</Text>
         </View>
       ) : (
         <View style={styles.form}>
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Email</Text>
           <TextInput
-            style={styles.input} placeholder="student@university.edu" placeholderTextColor={colors.textTertiary}
-            value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
+            style={[
+              styles.input,
+              { backgroundColor: theme.colors.surface, color: theme.colors.textPrimary, borderColor: `${theme.colors.textTertiary}50`, borderRadius: theme.borderRadius.md },
+            ]}
+            placeholder="student@university.edu"
+            placeholderTextColor={theme.colors.textTertiary}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
           />
-          <TouchableOpacity style={[styles.button, isLoading && styles.buttonDisabled]} onPress={handleReset} disabled={isLoading} activeOpacity={0.85}>
-            {isLoading ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.buttonText}>Send reset link</Text>}
+          <TouchableOpacity
+            style={[
+              styles.button,
+              { backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md },
+              isLoading && styles.buttonDisabled,
+            ]}
+            onPress={handleReset}
+            disabled={isLoading}
+            activeOpacity={0.85}
+          >
+            {isLoading ? <ActivityIndicator color={theme.colors.surface} /> : <Text style={[styles.buttonText, { color: theme.colors.surface }]}>Send reset link</Text>}
           </TouchableOpacity>
-          {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
+          {Boolean(error) && <Text style={[styles.errorText, { color: theme.colors.error }]}>{error}</Text>}
         </View>
       )}
 
       <TouchableOpacity style={styles.backLink} onPress={handleBack}>
-        <Text style={styles.backLinkText}>Back to sign in</Text>
+        <Text style={[styles.backLinkText, { color: theme.colors.primary }]}>Back to sign in</Text>
       </TouchableOpacity>
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface, paddingHorizontal: spacing.xl, paddingTop: spacing.xxl },
-  backButton: { alignSelf: 'flex-start', marginBottom: spacing.lg },
-  backText: { fontSize: fontSizes.md, color: colors.primary, fontWeight: '600' },
-  header: { marginBottom: spacing.xl },
-  title: { fontSize: fontSizes.xxl, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
-  subtitle: { fontSize: fontSizes.md, color: colors.textSecondary, lineHeight: 22 },
+  backButton: { alignSelf: 'flex-start', marginVertical: 12 },
+  backText: { fontSize: 14, fontWeight: '600' },
+  header: { marginBottom: 24 },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
+  subtitle: { fontSize: 14, lineHeight: 22 },
   form: { width: '100%' },
-  label: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.xs },
-  input: {
-    borderWidth: 1, borderColor: colors.textTertiary, borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 4, fontSize: fontSizes.md,
-    color: colors.textPrimary, backgroundColor: colors.background, marginBottom: spacing.lg,
-  },
-  button: { backgroundColor: colors.primary, paddingVertical: spacing.md, borderRadius: borderRadius.md, alignItems: 'center' },
+  label: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  input: { borderWidth: 1, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, marginBottom: 20 },
+  button: { paddingVertical: 14, alignItems: 'center' },
   buttonDisabled: { opacity: 0.7 },
-  buttonText: { color: colors.surface, fontSize: fontSizes.lg, fontWeight: 'bold' },
-  errorText: { fontSize: fontSizes.sm, color: colors.error, textAlign: 'center', marginTop: spacing.md },
-  successCard: { backgroundColor: colors.background, padding: spacing.lg, borderRadius: borderRadius.lg, alignItems: 'center', marginVertical: spacing.md },
-  successEmoji: { fontSize: 40, marginBottom: spacing.sm },
-  successTitle: { fontSize: fontSizes.md, fontWeight: 'bold', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.xs },
-  successText: { fontSize: fontSizes.sm, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
-  backLink: { alignItems: 'center', marginTop: spacing.xl },
-  backLinkText: { fontSize: fontSizes.md, color: colors.primary, fontWeight: '600' },
+  buttonText: { fontSize: 16, fontWeight: 'bold' },
+  errorText: { fontSize: 12, textAlign: 'center', marginTop: 16 },
+  successCard: { padding: 20, alignItems: 'center', marginVertical: 16, borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
+  successEmoji: { fontSize: 40, marginBottom: 8 },
+  successTitle: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 },
+  successText: { fontSize: 12, textAlign: 'center', lineHeight: 18 },
+  backLink: { alignItems: 'center', marginTop: 24 },
+  backLinkText: { fontSize: 14, fontWeight: '600' },
 });
 
 export default ForgotPasswordScreen;

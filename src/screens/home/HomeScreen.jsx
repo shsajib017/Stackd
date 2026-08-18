@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useBudget from '../../hooks/useBudget';
 import useStudySessions from '../../hooks/useStudySessions';
@@ -15,19 +15,20 @@ import EmptyState from '../../components/common/EmptyState';
 import SectionHeader from '../../components/common/SectionHeader';
 import SideDrawer from '../../components/common/SideDrawer';
 import SkeletonCard from '../../components/common/SkeletonCard';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import QuickActionButton from '../../components/home/QuickActionButton';
 import StreakCard from '../../components/home/StreakCard';
 import BudgetSummaryCard from '../../components/home/BudgetSummaryCard';
 import StudySummaryCard from '../../components/home/StudySummaryCard';
 import MealSummaryCard from '../../components/home/MealSummaryCard';
 import UpcomingExamCard from '../../components/home/UpcomingExamCard';
-
 import AppHeader from '../../components/common/AppHeader';
 
 /**
  * Main Home Dashboard Screen for Stackd.
  */
 const HomeScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { user, profile } = useAuthStore();
   const { monthlyTotal, expenses, fetchExpenses, isLoading: budgetLoading } = useBudget();
@@ -76,8 +77,8 @@ const HomeScreen = React.memo(({ navigation }) => {
     <View>
       <View style={styles.headerRow}>
         <View style={styles.greetingBox}>
-          <Text style={styles.greetingText}>{greeting}</Text>
-          <Text style={styles.dateText}>{formatDateFull()}</Text>
+          <Text style={[styles.greetingText, { color: theme.colors.textPrimary }]}>{greeting}</Text>
+          <Text style={[styles.dateText, { color: theme.colors.textSecondary }]}>{formatDateFull()}</Text>
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('ProfileStack')} activeOpacity={0.8}>
           <Avatar name={profile?.name || 'User'} size={44} imageUrl={profile?.avatar_url} />
@@ -116,7 +117,7 @@ const HomeScreen = React.memo(({ navigation }) => {
         <EmptyState icon="📝" title="No exams yet" subtitle="Add your subjects to start tracking exams" />
       ) : (
         upcomingExams.map((exam) => (
-          <UpcomingExamCard key={exam.id} subjectName={exam.name} subjectColor={exam.color_code || colors.primary} examDate={exam.exam_date} />
+          <UpcomingExamCard key={exam.id} subjectName={exam.name} subjectColor={exam.color_code || theme.colors.primary} examDate={exam.exam_date} />
         ))
       )}
 
@@ -125,20 +126,20 @@ const HomeScreen = React.memo(({ navigation }) => {
         <EmptyState icon="💸" title="No expenses yet" subtitle="Log your first expense today" />
       ) : null}
     </View>
-  ), [budgetLoading, combinedStreak, completedTodayCount, expenses, greeting, mealsLoading, monthlyTotal, navigation, nextExam, profile, recentExpenses.length, streakLoading, studyLoading, subjectsLoading, todayMeals, todayOutsideSpending, todaySessions, upcomingExams]);
+  ), [budgetLoading, combinedStreak, completedTodayCount, expenses, greeting, mealsLoading, monthlyTotal, navigation, nextExam, profile, recentExpenses.length, streakLoading, studyLoading, subjectsLoading, theme.colors.primary, theme.colors.textPrimary, theme.colors.textSecondary, todayMeals, todayOutsideSpending, todaySessions, upcomingExams]);
 
   const renderExpenseItem = useCallback(({ item }) => (
-    <View style={styles.expenseRow}>
+    <View style={[styles.expenseRow, { backgroundColor: theme.colors.surface, borderColor: `${theme.colors.textTertiary}20`, borderRadius: theme.borderRadius.md }]}>
       <View style={styles.expenseLeft}>
-        <Text style={styles.expenseCategory}>{item.category || 'General'}</Text>
-        <Text style={styles.expenseDate}>{formatDateShort(item.date)}</Text>
+        <Text style={[styles.expenseCategory, { color: theme.colors.textPrimary }]}>{item.category || 'General'}</Text>
+        <Text style={[styles.expenseDate, { color: theme.colors.textSecondary }]}>{formatDateShort(item.date)}</Text>
       </View>
-      <Text style={styles.expenseAmount}>-৳ {Number(item.amount || 0).toLocaleString()}</Text>
+      <Text style={[styles.expenseAmount, { color: theme.colors.error }]}>-৳ {Number(item.amount || 0).toLocaleString()}</Text>
     </View>
-  ), []);
+  ), [theme.borderRadius.md, theme.colors.error, theme.colors.surface, theme.colors.textPrimary, theme.colors.textSecondary, theme.colors.textTertiary]);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <AppHeader title="Stackd Dashboard" onMenuPress={() => setDrawerVisible(true)} />
       <FlatList
         contentContainerStyle={styles.content}
@@ -149,29 +150,25 @@ const HomeScreen = React.memo(({ navigation }) => {
         showsVerticalScrollIndicator={false}
       />
       <SideDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)} navigation={navigation} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  headerMenuBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  headerMenuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
-  content: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.xxl + 40 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
-  greetingBox: { flex: 1, marginRight: spacing.sm },
-  greetingText: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary },
-  dateText: { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
-  quickActionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.sm },
+  content: { paddingTop: 8, paddingBottom: 80 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  greetingBox: { flex: 1, marginRight: 8 },
+  greetingText: { fontSize: 16, fontWeight: '800' },
+  dateText: { fontSize: 10, marginTop: 2 },
+  quickActionsRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 8 },
   expenseRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md,
-    marginVertical: 3, borderWidth: 1, borderColor: `${colors.textTertiary}20`,
+    padding: 16, marginVertical: 3, borderWidth: 1,
   },
   expenseLeft: { flex: 1 },
-  expenseCategory: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary },
-  expenseDate: { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
-  expenseAmount: { fontSize: fontSizes.md, fontWeight: '800', color: colors.error },
+  expenseCategory: { fontSize: 12, fontWeight: '700' },
+  expenseDate: { fontSize: 10, marginTop: 2 },
+  expenseAmount: { fontSize: 14, fontWeight: '800' },
 });
 
 export default HomeScreen;

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatDateShort } from '../../utils/formatDate';
 import EmptyState from '../common/EmptyState';
 import SkeletonCard from '../common/SkeletonCard';
@@ -12,6 +12,7 @@ const stripMarkdown = (text = '') => text.replace(/#+\s/g, '').replace(/[*_`~[\]
  * Subject Markdown Notes Tab with content preview, header action, and safe-inset FAB.
  */
 const NotesTab = React.memo(({ notes = [], subjectId, navigation, isLoading }) => {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const fabBottom = insets.bottom + 80 + 16;
 
@@ -21,18 +22,25 @@ const NotesTab = React.memo(({ notes = [], subjectId, navigation, isLoading }) =
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            borderColor: `${theme.colors.textTertiary}20`,
+          },
+        ]}
         onPress={() => navigation.navigate('NotesEditorScreen', { note: item, subjectId })}
         activeOpacity={0.75}
       >
         <View style={styles.cardTop}>
-          <Text style={styles.noteTitle} numberOfLines={1}>{item.title || 'Untitled Note'}</Text>
-          <Text style={styles.noteDate}>{dateStr}</Text>
+          <Text style={[styles.noteTitle, { color: theme.colors.textPrimary }]} numberOfLines={1}>{item.title || 'Untitled Note'}</Text>
+          <Text style={[styles.noteDate, { color: theme.colors.textTertiary }]}>{dateStr}</Text>
         </View>
-        <Text style={styles.notePreview} numberOfLines={2}>{preview}</Text>
+        <Text style={[styles.notePreview, { color: theme.colors.textSecondary }]} numberOfLines={2}>{preview}</Text>
       </TouchableOpacity>
     );
-  }, [navigation, subjectId]);
+  }, [navigation, subjectId, theme]);
 
   if (isLoading) {
     return (
@@ -48,13 +56,13 @@ const NotesTab = React.memo(({ notes = [], subjectId, navigation, isLoading }) =
     <View style={styles.container}>
       {notes.length > 0 && (
         <View style={styles.headerRow}>
-          <Text style={styles.countText}>{notes.length} {notes.length === 1 ? 'Note' : 'Notes'}</Text>
+          <Text style={[styles.countText, { color: theme.colors.textSecondary }]}>{notes.length} {notes.length === 1 ? 'Note' : 'Notes'}</Text>
           <TouchableOpacity
-            style={styles.addBtn}
+            style={[styles.addBtn, { backgroundColor: `${theme.colors.primary}15`, borderRadius: theme.borderRadius.full }]}
             onPress={() => navigation.navigate('NotesEditorScreen', { subjectId })}
             activeOpacity={0.8}
           >
-            <Text style={styles.addBtnText}>+ New note</Text>
+            <Text style={[styles.addBtnText, { color: theme.colors.primary }]}>+ New note</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -76,7 +84,7 @@ const NotesTab = React.memo(({ notes = [], subjectId, navigation, isLoading }) =
         showsVerticalScrollIndicator={false}
       />
       <TouchableOpacity
-        style={[styles.fab, { bottom: fabBottom }]}
+        style={[styles.fab, { bottom: fabBottom, backgroundColor: theme.colors.accent }]}
         onPress={() => navigation.navigate('NotesEditorScreen', { subjectId })}
         activeOpacity={0.85}
       >
@@ -88,20 +96,20 @@ const NotesTab = React.memo(({ notes = [], subjectId, navigation, isLoading }) =
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  loadingContainer: { padding: spacing.md },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.md, paddingTop: spacing.xs, paddingBottom: spacing.xs },
-  countText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase' },
-  addBtn: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.sm + 4, paddingVertical: 5, borderRadius: borderRadius.full },
-  addBtnText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
-  listContent: { padding: spacing.md },
-  mb: { marginBottom: spacing.sm },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.sm, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
+  loadingContainer: { padding: 16 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 },
+  countText: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  addBtn: { paddingHorizontal: 12, paddingVertical: 5 },
+  addBtnText: { fontSize: 10, fontWeight: '700' },
+  listContent: { padding: 16 },
+  mb: { marginBottom: 8 },
+  card: { padding: 16, marginBottom: 8, borderWidth: 1 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  noteTitle: { fontSize: fontSizes.sm + 1, fontWeight: '800', color: colors.textPrimary, flex: 1, marginRight: spacing.xs },
-  noteDate: { fontSize: fontSizes.xs - 1, color: colors.textTertiary, fontWeight: '600' },
-  notePreview: { fontSize: fontSizes.xs, color: colors.textSecondary, lineHeight: 18 },
-  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', ...shadows.md, zIndex: 10 },
-  fabIcon: { fontSize: 28, color: colors.surface, lineHeight: 30, fontWeight: '700' },
+  noteTitle: { fontSize: 13, fontWeight: '800', flex: 1, marginRight: 4 },
+  noteDate: { fontSize: 9, fontWeight: '600' },
+  notePreview: { fontSize: 10, lineHeight: 18 },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  fabIcon: { fontSize: 28, color: '#FFFFFF', lineHeight: 30, fontWeight: '700' },
 });
 
 export default NotesTab;

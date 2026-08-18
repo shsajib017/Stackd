@@ -3,13 +3,15 @@ import {
   ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
   StyleSheet, Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuth from '../../hooks/useAuth';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 /**
  * User Account Registration Screen with student credentials and validation.
  */
 const SignupScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const { signUp, isLoading } = useAuth();
   const [form, setForm] = useState({ name: '', university: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
@@ -46,81 +48,91 @@ const SignupScreen = React.memo(({ navigation }) => {
   const handleBack = useCallback(() => navigation.goBack(), [navigation]);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}><Text style={styles.backText}>← Back</Text></TouchableOpacity>
-        <View style={styles.header}>
-          <Text style={styles.title}>Create account</Text>
-          <Text style={styles.subtitle}>Join Stackd today</Text>
-        </View>
-
-        <View style={styles.form}>
-          {[
-            { label: 'Full Name', key: 'name', ph: 'e.g. Shakib Ahmed', cap: 'words' },
-            { label: 'University / Institution', key: 'university', ph: 'e.g. Dhaka University', cap: 'words' },
-            { label: 'Email', key: 'email', ph: 'student@university.edu', cap: 'none', type: 'email-address' },
-            { label: 'Password', key: 'password', ph: 'At least 6 characters', sec: true },
-            { label: 'Confirm Password', key: 'confirmPassword', ph: 'Re-enter password', sec: true },
-          ].map(({ label, key, ph, cap, type, sec }) => (
-            <View key={key} style={styles.inputGroup}>
-              <Text style={styles.label}>{label}</Text>
-              <TextInput
-                style={[styles.input, errors[key] ? styles.inputError : null]}
-                placeholder={ph}
-                placeholderTextColor={colors.textTertiary}
-                value={form[key]}
-                onChangeText={(v) => updateField(key, v)}
-                autoCapitalize={cap || 'none'}
-                keyboardType={type || 'default'}
-                secureTextEntry={Boolean(sec)}
-              />
-              {Boolean(errors[key]) && <Text style={styles.errorText}>{errors[key]}</Text>}
-            </View>
-          ))}
-
-          <TouchableOpacity style={[styles.signupButton, isLoading && styles.buttonDisabled]} onPress={handleSignup} disabled={isLoading} activeOpacity={0.85}>
-            {isLoading ? <ActivityIndicator color={colors.surface} /> : <Text style={styles.signupButtonText}>Create account</Text>}
+    <ScreenWrapper>
+      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Text style={[styles.backText, { color: theme.colors.primary }]}>← Back</Text>
           </TouchableOpacity>
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Create account</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Join Stackd today</Text>
+          </View>
 
-          {Boolean(authError) && <Text style={styles.globalErrorText}>{authError}</Text>}
+          <View style={styles.form}>
+            {[
+              { label: 'Full Name', key: 'name', ph: 'e.g. Shakib Ahmed', cap: 'words' },
+              { label: 'University / Institution', key: 'university', ph: 'e.g. Dhaka University', cap: 'words' },
+              { label: 'Email', key: 'email', ph: 'student@university.edu', cap: 'none', type: 'email-address' },
+              { label: 'Password', key: 'password', ph: 'At least 6 characters', sec: true },
+              { label: 'Confirm Password', key: 'confirmPassword', ph: 'Re-enter password', sec: true },
+            ].map(({ label, key, ph, cap, type, sec }) => (
+              <View key={key} style={styles.inputGroup}>
+                <Text style={[styles.label, { color: theme.colors.textPrimary }]}>{label}</Text>
+                <TextInput
+                  style={[
+                    styles.input,
+                    { backgroundColor: theme.colors.surface, color: theme.colors.textPrimary, borderColor: errors[key] ? theme.colors.error : `${theme.colors.textTertiary}50`, borderRadius: theme.borderRadius.md },
+                  ]}
+                  placeholder={ph}
+                  placeholderTextColor={theme.colors.textTertiary}
+                  value={form[key]}
+                  onChangeText={(v) => updateField(key, v)}
+                  autoCapitalize={cap || 'none'}
+                  keyboardType={type || 'default'}
+                  secureTextEntry={Boolean(sec)}
+                />
+                {Boolean(errors[key]) && <Text style={[styles.errorText, { color: theme.colors.error }]}>{errors[key]}</Text>}
+              </View>
+            ))}
 
-          <TouchableOpacity style={styles.signinLink} onPress={handleBack}>
-            <Text style={styles.signinPrompt}>Already have an account? <Text style={styles.signinHighlight}>Sign in</Text></Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <TouchableOpacity
+              style={[
+                styles.signupButton,
+                { backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md },
+                isLoading && styles.buttonDisabled,
+              ]}
+              onPress={handleSignup}
+              disabled={isLoading}
+              activeOpacity={0.85}
+            >
+              {isLoading ? <ActivityIndicator color={theme.colors.surface} /> : <Text style={[styles.signupButtonText, { color: theme.colors.surface }]}>Create account</Text>}
+            </TouchableOpacity>
+
+            {Boolean(authError) && <Text style={[styles.globalErrorText, { color: theme.colors.error }]}>{authError}</Text>}
+
+            <TouchableOpacity style={styles.signinLink} onPress={handleBack}>
+              <Text style={[styles.signinPrompt, { color: theme.colors.textSecondary }]}>
+                Already have an account? <Text style={[styles.signinHighlight, { color: theme.colors.primary }]}>Sign in</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.surface },
-  scrollContent: { flexGrow: 1, paddingHorizontal: spacing.xl, paddingVertical: spacing.xl },
-  backButton: { alignSelf: 'flex-start', marginTop: spacing.md, marginBottom: spacing.md },
-  backText: { fontSize: fontSizes.md, color: colors.primary, fontWeight: '600' },
-  header: { marginBottom: spacing.lg },
-  title: { fontSize: fontSizes.xxl, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs },
-  subtitle: { fontSize: fontSizes.md, color: colors.textSecondary },
+  flexOne: { flex: 1 },
+  scrollContent: { flexGrow: 1, paddingVertical: 16 },
+  backButton: { alignSelf: 'flex-start', marginVertical: 8 },
+  backText: { fontSize: 14, fontWeight: '600' },
+  header: { marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
+  subtitle: { fontSize: 14 },
   form: { width: '100%' },
-  inputGroup: { marginBottom: spacing.sm + 2 },
-  label: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary, marginBottom: spacing.xs },
-  input: {
-    borderWidth: 1, borderColor: colors.textTertiary, borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2, fontSize: fontSizes.md,
-    color: colors.textPrimary, backgroundColor: colors.background,
-  },
-  inputError: { borderColor: colors.error },
-  errorText: { fontSize: fontSizes.xs, color: colors.error, marginTop: 2 },
-  signupButton: {
-    backgroundColor: colors.primary, paddingVertical: spacing.md, borderRadius: borderRadius.md,
-    alignItems: 'center', justifyContent: 'center', marginTop: spacing.md,
-  },
+  inputGroup: { marginBottom: 10 },
+  label: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
+  input: { borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14 },
+  errorText: { fontSize: 10, marginTop: 2 },
+  signupButton: { paddingVertical: 14, alignItems: 'center', justifyContent: 'center', marginTop: 16 },
   buttonDisabled: { opacity: 0.7 },
-  signupButtonText: { color: colors.surface, fontSize: fontSizes.lg, fontWeight: 'bold' },
-  globalErrorText: { fontSize: fontSizes.sm, color: colors.error, textAlign: 'center', marginTop: spacing.md },
-  signinLink: { alignItems: 'center', marginTop: spacing.lg, marginBottom: spacing.md },
-  signinPrompt: { fontSize: fontSizes.md, color: colors.textSecondary },
-  signinHighlight: { color: colors.primary, fontWeight: 'bold' },
+  signupButtonText: { fontSize: 16, fontWeight: 'bold' },
+  globalErrorText: { fontSize: 12, textAlign: 'center', marginTop: 12 },
+  signinLink: { alignItems: 'center', marginTop: 16, marginBottom: 16 },
+  signinPrompt: { fontSize: 14 },
+  signinHighlight: { fontWeight: 'bold' },
 });
 
 export default SignupScreen;

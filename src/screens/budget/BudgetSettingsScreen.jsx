@@ -1,8 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useBudgetStore from '../../store/useBudgetStore';
 import useUIStore from '../../store/useUIStore';
@@ -10,13 +9,14 @@ import { updateProfile } from '../../supabase/profiles';
 import { EXPENSE_CATEGORIES } from '../../utils/constants';
 import { formatBDT } from '../../utils/formatCurrency';
 import Button from '../../components/common/Button';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 const CATEGORY_ICONS = { Food: '🍔', Transport: '🚌', Books: '📚', Tuition: '🎓', Entertainment: '🎮', Other: '📦' };
 
 /** Budget Settings Screen for configuring monthly limits, category limits, and alert thresholds. */
 const BudgetSettingsScreen = React.memo(({ navigation }) => {
-  const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const user = useAuthStore((s) => s.user);
   const profile = useAuthStore((s) => s.profile);
   const setProfile = useAuthStore((s) => s.setProfile);
@@ -97,85 +97,99 @@ const BudgetSettingsScreen = React.memo(({ navigation }) => {
   }, [alertCat80, alertMonthly90, categoryLimits, currentMonthlyLimit, monthlyLimitInput, navigation, profile, setProfile, setStoreCategoryLimits, setStoreMonthlyLimit, showToast, user?.id]);
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <AppHeader title="Budget Settings" showBack onBack={() => navigation.goBack()} />
+    <ScreenWrapper>
+      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <AppHeader title="Budget Settings" showBack onBack={() => navigation.goBack()} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>Monthly Budget Limit</Text>
-          <Text style={styles.currentLimitDisplay}>{formatBDT(currentMonthlyLimit)}</Text>
-          <View style={styles.inputRow}>
-            <View style={styles.prefixInputBox}>
-              <Text style={styles.prefix}>৳</Text>
-              <TextInput style={styles.textInput} value={monthlyLimitInput} onChangeText={setMonthlyLimitInput} placeholder="Set new limit..." placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
-            </View>
-            <Button label="Update" onPress={handleUpdateMonthlyLimit} size="sm" style={styles.updateBtn} />
-          </View>
-        </View>
-
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>Spending Limits per Category</Text>
-          <Text style={styles.sectionSub}>Leave empty for no limit</Text>
-          {EXPENSE_CATEGORIES.map((cat) => (
-            <View key={cat} style={styles.catRow}>
-              <View style={styles.catInfo}><Text style={styles.catIcon}>{CATEGORY_ICONS[cat] || '📦'}</Text><Text style={styles.catName}>{cat}</Text></View>
-              <View style={styles.catInputWrap}>
-                <Text style={styles.catPrefix}>৳</Text>
-                <TextInput style={styles.catInput} value={categoryLimits[cat] !== undefined ? String(categoryLimits[cat]) : ''} onChangeText={(v) => handleCategoryLimitChange(cat, v)} placeholder="No limit" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={[styles.sectionCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}>
+            <Text style={[styles.sectionHeader, { color: theme.colors.textPrimary }]}>Monthly Budget Limit</Text>
+            <Text style={[styles.currentLimitDisplay, { color: theme.colors.primary }]}>{formatBDT(currentMonthlyLimit)}</Text>
+            <View style={styles.inputRow}>
+              <View style={[styles.prefixInputBox, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
+                <Text style={[styles.prefix, { color: theme.colors.primary }]}>৳</Text>
+                <TextInput
+                  style={[styles.textInput, { color: theme.colors.textPrimary }]}
+                  value={monthlyLimitInput}
+                  onChangeText={setMonthlyLimitInput}
+                  placeholder="Set new limit..."
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="decimal-pad"
+                />
               </View>
+              <Button label="Update" onPress={handleUpdateMonthlyLimit} size="sm" style={styles.updateBtn} />
             </View>
-          ))}
-          <Button label="Save category limits" variant="secondary" onPress={handleSaveCategoryLimits} size="sm" style={styles.saveCatBtn} fullWidth />
-        </View>
-
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>Alerts</Text>
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Alert when category reaches 80%</Text>
-            <Switch value={alertCat80} onValueChange={(v) => handleAlertToggle('cat80', v)} trackColor={{ false: colors.textTertiary, true: colors.primary }} />
           </View>
-          <View style={styles.divider} />
-          <View style={styles.toggleRow}>
-            <Text style={styles.toggleLabel}>Alert when monthly budget reaches 90%</Text>
-            <Switch value={alertMonthly90} onValueChange={(v) => handleAlertToggle('monthly90', v)} trackColor={{ false: colors.textTertiary, true: colors.primary }} />
-          </View>
-        </View>
 
-        <Button label="Save all settings" onPress={handleSaveAll} loading={isLoading} fullWidth style={styles.saveAllBtn} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <View style={[styles.sectionCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}>
+            <Text style={[styles.sectionHeader, { color: theme.colors.textPrimary }]}>Spending Limits per Category</Text>
+            <Text style={[styles.sectionSub, { color: theme.colors.textSecondary }]}>Leave empty for no limit</Text>
+            {EXPENSE_CATEGORIES.map((cat) => (
+              <View key={cat} style={[styles.catRow, { borderBottomColor: `${theme.colors.textTertiary}15` }]}>
+                <View style={styles.catInfo}>
+                  <Text style={styles.catIcon}>{CATEGORY_ICONS[cat] || '📦'}</Text>
+                  <Text style={[styles.catName, { color: theme.colors.textPrimary }]}>{cat}</Text>
+                </View>
+                <View style={[styles.catInputWrap, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.sm, borderColor: `${theme.colors.textTertiary}30` }]}>
+                  <Text style={[styles.catPrefix, { color: theme.colors.textSecondary }]}>৳</Text>
+                  <TextInput
+                    style={[styles.catInput, { color: theme.colors.textPrimary }]}
+                    value={categoryLimits[cat] !== undefined ? String(categoryLimits[cat]) : ''}
+                    onChangeText={(v) => handleCategoryLimitChange(cat, v)}
+                    placeholder="No limit"
+                    placeholderTextColor={theme.colors.textTertiary}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+              </View>
+            ))}
+            <Button label="Save category limits" variant="secondary" onPress={handleSaveCategoryLimits} size="sm" style={styles.saveCatBtn} fullWidth />
+          </View>
+
+          <View style={[styles.sectionCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}>
+            <Text style={[styles.sectionHeader, { color: theme.colors.textPrimary }]}>Alerts</Text>
+            <View style={styles.toggleRow}>
+              <Text style={[styles.toggleLabel, { color: theme.colors.textPrimary }]}>Alert when category reaches 80%</Text>
+              <Switch value={alertCat80} onValueChange={(v) => handleAlertToggle('cat80', v)} trackColor={{ false: theme.colors.textTertiary, true: theme.colors.primary }} />
+            </View>
+            <View style={[styles.divider, { backgroundColor: `${theme.colors.textTertiary}15` }]} />
+            <View style={styles.toggleRow}>
+              <Text style={[styles.toggleLabel, { color: theme.colors.textPrimary }]}>Alert when monthly budget reaches 90%</Text>
+              <Switch value={alertMonthly90} onValueChange={(v) => handleAlertToggle('monthly90', v)} trackColor={{ false: theme.colors.textTertiary, true: theme.colors.primary }} />
+            </View>
+          </View>
+
+          <Button label="Save all settings" onPress={handleSaveAll} loading={isLoading} fullWidth style={styles.saveAllBtn} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingBottom: spacing.sm, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}20` },
-  backBtn: { padding: spacing.xs },
-  backArrow: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  headerTitle: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary },
-  headerSpacer: { width: 32 },
-  scrollContent: { padding: spacing.md, paddingBottom: 130 },
-  sectionCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md, ...shadows.sm, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  sectionHeader: { fontSize: fontSizes.md, fontWeight: '800', color: colors.textPrimary },
-  sectionSub: { fontSize: fontSizes.xs, color: colors.textSecondary, marginBottom: spacing.sm },
-  currentLimitDisplay: { fontSize: fontSizes.xxl, fontWeight: '900', color: colors.primary, marginVertical: spacing.xs },
-  inputRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
-  prefixInputBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, paddingHorizontal: spacing.sm },
-  prefix: { fontSize: fontSizes.md, fontWeight: '700', color: colors.primary, marginRight: 4 },
-  textInput: { flex: 1, paddingVertical: spacing.xs + 2, fontSize: fontSizes.sm, color: colors.textPrimary, fontWeight: '600' },
+  flexOne: { flex: 1 },
+  scrollContent: { paddingVertical: 8, paddingBottom: 130 },
+  sectionCard: { padding: 16, marginBottom: 16, borderWidth: 1, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  sectionHeader: { fontSize: 14, fontWeight: '800' },
+  sectionSub: { fontSize: 10, marginBottom: 8 },
+  currentLimitDisplay: { fontSize: 24, fontWeight: '900', marginVertical: 4 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
+  prefixInputBox: { flex: 1, flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 8 },
+  prefix: { fontSize: 14, fontWeight: '700', marginRight: 4 },
+  textInput: { flex: 1, paddingVertical: 6, fontSize: 12, fontWeight: '600' },
   updateBtn: { minWidth: 80 },
-  catRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.xs + 2, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}15` },
+  catRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1 },
   catInfo: { flexDirection: 'row', alignItems: 'center' },
-  catIcon: { fontSize: 18, marginRight: spacing.sm },
-  catName: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
-  catInputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, borderRadius: borderRadius.sm, borderWidth: 1, borderColor: `${colors.textTertiary}30`, paddingHorizontal: spacing.xs + 2, width: 110 },
-  catPrefix: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary, marginRight: 2 },
-  catInput: { flex: 1, paddingVertical: 4, fontSize: fontSizes.xs + 1, color: colors.textPrimary, fontWeight: '600', textAlign: 'right' },
-  saveCatBtn: { marginTop: spacing.md },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: spacing.xs },
-  toggleLabel: { fontSize: fontSizes.sm, color: colors.textPrimary, fontWeight: '500', flex: 1, marginRight: spacing.sm },
-  divider: { height: 1, backgroundColor: `${colors.textTertiary}15`, marginVertical: spacing.xs },
-  saveAllBtn: { marginTop: spacing.xs },
+  catIcon: { fontSize: 18, marginRight: 8 },
+  catName: { fontSize: 12, fontWeight: '600' },
+  catInputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 6, width: 110 },
+  catPrefix: { fontSize: 10, fontWeight: '700', marginRight: 2 },
+  catInput: { flex: 1, paddingVertical: 4, fontSize: 11, fontWeight: '600', textAlign: 'right' },
+  saveCatBtn: { marginTop: 16 },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 },
+  toggleLabel: { fontSize: 12, fontWeight: '500', flex: 1, marginRight: 8 },
+  divider: { height: 1, marginVertical: 4 },
+  saveAllBtn: { marginTop: 4 },
 });
 
 export default BudgetSettingsScreen;

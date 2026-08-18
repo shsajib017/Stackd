@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -8,6 +8,8 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
  * 7-Day Weekly Study Minutes Bar Chart with current day highlight.
  */
 const StudyWeekChart = React.memo(({ sessions = [] }) => {
+  const { theme } = useTheme();
+
   // Current day index (0 = Mon, 6 = Sun)
   const todayDayIndex = useMemo(() => {
     const d = new Date().getDay();
@@ -48,10 +50,19 @@ const StudyWeekChart = React.memo(({ sessions = [] }) => {
   const maxHours = (maxMinutes / 60).toFixed(1);
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.textTertiary}20`,
+        },
+      ]}
+    >
       <View style={styles.header}>
-        <Text style={styles.subtitle}>Daily study hours</Text>
-        <Text style={styles.peakLabel}>Peak: {maxHours}h</Text>
+        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Daily study hours</Text>
+        <Text style={[styles.peakLabel, { color: theme.colors.primary }]}>Peak: {maxHours}h</Text>
       </View>
 
       <View style={styles.chartContainer}>
@@ -64,12 +75,19 @@ const StudyWeekChart = React.memo(({ sessions = [] }) => {
                 <View
                   style={[
                     styles.barFill,
-                    { height: `${heightPct}%` },
-                    item.isToday ? styles.barToday : (item.minutes > 0 ? styles.barActive : styles.barZero),
+                    {
+                      height: `${heightPct}%`,
+                      borderRadius: theme.borderRadius.sm,
+                      backgroundColor: item.isToday
+                        ? theme.colors.primary
+                        : item.minutes > 0
+                        ? `${theme.colors.accent}90`
+                        : `${theme.colors.textTertiary}25`,
+                    },
                   ]}
                 />
               </View>
-              <Text style={[styles.dayLabel, item.isToday && styles.dayLabelToday]}>
+              <Text style={[styles.dayLabel, { color: theme.colors.textTertiary }, item.isToday && { color: theme.colors.primary, fontWeight: '800' }]}>
                 {item.day}
               </Text>
             </View>
@@ -82,36 +100,30 @@ const StudyWeekChart = React.memo(({ sessions = [] }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    padding: 16,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: `${colors.textTertiary}20`,
-    ...shadows.sm,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: fontSizes.xs,
-    color: colors.textSecondary,
+    fontSize: 10,
     fontWeight: '600',
   },
   peakLabel: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '700',
-    color: colors.primary,
   },
   chartContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
     height: 100,
-    paddingTop: spacing.xs,
+    paddingTop: 4,
   },
   column: {
     flex: 1,
@@ -127,26 +139,11 @@ const styles = StyleSheet.create({
   },
   barFill: {
     width: '100%',
-    borderRadius: borderRadius.sm,
-  },
-  barZero: {
-    backgroundColor: `${colors.textTertiary}25`,
-  },
-  barActive: {
-    backgroundColor: `${colors.accent}90`,
-  },
-  barToday: {
-    backgroundColor: colors.primary,
   },
   dayLabel: {
-    fontSize: fontSizes.xs - 2,
+    fontSize: 8,
     fontWeight: '600',
-    color: colors.textTertiary,
     marginTop: 4,
-  },
-  dayLabelToday: {
-    color: colors.primary,
-    fontWeight: '800',
   },
 });
 

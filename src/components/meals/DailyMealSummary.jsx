@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import StatusChip from '../common/StatusChip';
 
 /**
  * Daily Nutrition and Meal Spending Breakdown Summary Card.
  */
 const DailyMealSummary = React.memo(({ meals = [], dailySpend = 0, budgetLimit = 400 }) => {
+  const { theme } = useTheme();
+
   const { dormCount, outsideCount, totalCalories } = useMemo(() => {
     let dorm = 0;
     let outside = 0;
@@ -26,9 +28,18 @@ const DailyMealSummary = React.memo(({ meals = [], dailySpend = 0, budgetLimit =
   const isOverBudget = dailySpend > budgetLimit;
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.textTertiary}20`,
+        },
+      ]}
+    >
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Daily Summary</Text>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Daily Summary</Text>
         <StatusChip
           label={isOverBudget ? 'Over food budget' : 'Within budget'}
           type={isOverBudget ? 'danger' : 'success'}
@@ -37,22 +48,22 @@ const DailyMealSummary = React.memo(({ meals = [], dailySpend = 0, budgetLimit =
       </View>
 
       <View style={styles.statsGrid}>
-        <View style={styles.statItem}>
+        <View style={[styles.statItem, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.sm }]}>
           <Text style={styles.statIcon}>🏠</Text>
-          <Text style={styles.statText}>{dormCount} {dormCount === 1 ? 'dorm meal' : 'dorm meals'}</Text>
+          <Text style={[styles.statText, { color: theme.colors.textSecondary }]}>{dormCount} {dormCount === 1 ? 'dorm meal' : 'dorm meals'}</Text>
         </View>
-        <View style={styles.statItem}>
+        <View style={[styles.statItem, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.sm }]}>
           <Text style={styles.statIcon}>🍜</Text>
-          <Text style={styles.statText}>{outsideCount} {outsideCount === 1 ? 'outside meal' : 'outside meals'}</Text>
+          <Text style={[styles.statText, { color: theme.colors.textSecondary }]}>{outsideCount} {outsideCount === 1 ? 'outside meal' : 'outside meals'}</Text>
         </View>
-        <View style={styles.statItem}>
+        <View style={[styles.statItem, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.sm }]}>
           <Text style={styles.statIcon}>💰</Text>
-          <Text style={styles.statText}>Spent: ৳{dailySpend}</Text>
+          <Text style={[styles.statText, { color: theme.colors.textSecondary }]}>Spent: ৳{dailySpend}</Text>
         </View>
         {totalCalories > 0 && (
-          <View style={styles.statItem}>
+          <View style={[styles.statItem, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.sm }]}>
             <Text style={styles.statIcon}>🔥</Text>
-            <Text style={styles.statText}>{totalCalories} kcal</Text>
+            <Text style={[styles.statText, { color: theme.colors.textSecondary }]}>{totalCalories} kcal</Text>
           </View>
         )}
       </View>
@@ -61,13 +72,13 @@ const DailyMealSummary = React.memo(({ meals = [], dailySpend = 0, budgetLimit =
 });
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  title: { fontSize: fontSizes.sm + 1, fontWeight: '800', color: colors.textPrimary },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  statItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', paddingHorizontal: spacing.sm, paddingVertical: 6, borderRadius: borderRadius.sm },
-  statIcon: { fontSize: fontSizes.sm, marginRight: 4 },
-  statText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary },
+  card: { padding: 16, borderWidth: 1 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  title: { fontSize: 13, fontWeight: '800' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  statItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 6 },
+  statIcon: { fontSize: 12, marginRight: 4 },
+  statText: { fontSize: 10, fontWeight: '700' },
 });
 
 export default DailyMealSummary;

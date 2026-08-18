@@ -3,7 +3,7 @@ import { Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableWithoutFeedba
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { Easing, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useSavings from '../../hooks/useSavings';
 import DrawerGoals from './DrawerGoals';
 import DrawerProfile from './DrawerProfile';
@@ -17,6 +17,7 @@ const ANIM_MS = 180;
 /** Fast and Reusable Left Side Drawer with Modal and GestureHandlerRootView. */
 const SideDrawer = React.memo(({ visible, onClose, navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const { goals } = useSavings();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -78,10 +79,21 @@ const SideDrawer = React.memo(({ visible, onClose, navigation }) => {
         </TouchableWithoutFeedback>
 
         <GestureDetector gesture={panGesture}>
-          <Animated.View style={[styles.drawer, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.md }, animatedDrawerStyle]}>
+          <Animated.View
+            style={[
+              styles.drawer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderLeftColor: theme.colors.primary,
+                paddingTop: insets.top,
+                paddingBottom: insets.bottom + 16,
+              },
+              animatedDrawerStyle,
+            ]}
+          >
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" nestedScrollEnabled bounces>
-              <DrawerProfile onPress={() => { onClose(); navigation.navigate('ProfileStack'); }} />
-              <DrawerGoals goals={goals} onSeeAllPress={() => { onClose(); navigation.navigate('BudgetStack', { screen: 'SavingsGoalsScreen' }); }} />
+              <DrawerProfile onPress={() => { onClose(); navigation.navigate('MainTabs', { screen: 'ProfileStack' }); }} />
+              <DrawerGoals goals={goals} onSeeAllPress={() => { onClose(); navigation.navigate('MainTabs', { screen: 'BudgetStack', params: { screen: 'SavingsGoalsScreen' } }); }} />
 
               <View style={styles.searchWrap}>
                 <Input value={searchQuery} onChangeText={setSearchQuery} placeholder="Search settings..." style={styles.searchInput} />
@@ -90,7 +102,7 @@ const SideDrawer = React.memo(({ visible, onClose, navigation }) => {
               <DrawerSettings navigation={navigation} onClose={onClose} searchQuery={searchQuery} />
 
               <View style={styles.footer}>
-                <Text style={styles.versionText}>Stackd v1.0.0</Text>
+                <Text style={[styles.versionText, { color: theme.colors.textTertiary }]}>Stackd v1.0.0</Text>
               </View>
             </ScrollView>
           </Animated.View>
@@ -102,23 +114,20 @@ const SideDrawer = React.memo(({ visible, onClose, navigation }) => {
 
 const styles = StyleSheet.create({
   modalRoot: { flex: 1 },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: colors.background },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.7)' },
   drawer: {
     position: 'absolute',
     left: 0,
     top: 0,
     bottom: 0,
     width: DRAWER_WIDTH,
-    backgroundColor: colors.surface,
     borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    ...shadows.lg,
   },
   scrollContent: { flexGrow: 1 },
-  searchWrap: { paddingHorizontal: spacing.md, paddingTop: spacing.md },
+  searchWrap: { paddingHorizontal: 16, paddingTop: 16 },
   searchInput: { marginBottom: 0 },
-  footer: { marginTop: 'auto', paddingVertical: spacing.lg, alignItems: 'center' },
-  versionText: { fontSize: fontSizes.xs, color: colors.textTertiary, fontWeight: '600' },
+  footer: { marginTop: 'auto', paddingVertical: 24, alignItems: 'center' },
+  versionText: { fontSize: 10, fontWeight: '600' },
 });
 
 export default SideDrawer;

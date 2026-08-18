@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useUIStore from '../../store/useUIStore';
 import { getMealsByDateRange } from '../../supabase/meals';
@@ -13,11 +13,13 @@ import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
 import SpendingChart from '../../components/budget/SpendingChart';
 import MealDayGroup from '../../components/meals/MealDayGroup';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 /** Meals History Screen displaying monthly nutrition and outside food expenditure. */
 const MealsHistoryScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const showToast = useUIStore((state) => state.showToast);
 
@@ -106,47 +108,47 @@ const MealsHistoryScreen = React.memo(({ navigation }) => {
 
   const renderHeader = useCallback(() => (
     <View>
-      <View style={styles.monthSelector}>
+      <View style={[styles.monthSelector, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.arrowBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={styles.arrowText}>‹</Text>
+          <Text style={[styles.arrowText, { color: theme.colors.textPrimary }]}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.monthTitle}>{MONTH_NAMES[selectedDate.getMonth()]} {year}</Text>
+        <Text style={[styles.monthTitle, { color: theme.colors.textPrimary }]}>{MONTH_NAMES[selectedDate.getMonth()]} {year}</Text>
         <TouchableOpacity onPress={() => changeMonth(1)} style={styles.arrowBtn} disabled={isCurrentMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <Text style={[styles.arrowText, isCurrentMonth && styles.arrowDisabled]}>›</Text>
+          <Text style={[styles.arrowText, { color: theme.colors.textPrimary }, isCurrentMonth && { color: theme.colors.textTertiary, opacity: 0.3 }]}>›</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.statsGrid}>
-        <View style={styles.statWrap}><StatCard icon="🏠" label="Dorm Meals" value={dormCount} color={colors.success} /></View>
-        <View style={styles.statWrap}><StatCard icon="🍜" label="Outside Meals" value={outsideCount} color={colors.accent} /></View>
-        <View style={styles.statWrap}><StatCard icon="৳" label="Food Spend" value={formatBDT(totalSpend)} color={colors.primary} /></View>
-        <View style={styles.statWrap}><StatCard icon="📊" label="Daily Avg" value={`${formatBDT(avgDaily)}/d`} color={colors.textSecondary} /></View>
+        <View style={styles.statWrap}><StatCard icon="🏠" label="Dorm Meals" value={dormCount} color={theme.colors.success} /></View>
+        <View style={styles.statWrap}><StatCard icon="🍜" label="Outside Meals" value={outsideCount} color={theme.colors.accent} /></View>
+        <View style={styles.statWrap}><StatCard icon="৳" label="Food Spend" value={formatBDT(totalSpend)} color={theme.colors.primary} /></View>
+        <View style={styles.statWrap}><StatCard icon="📊" label="Daily Avg" value={`${formatBDT(avgDaily)}/d`} color={theme.colors.textSecondary} /></View>
       </View>
 
-      <View style={styles.breakdownCard}>
+      <View style={[styles.breakdownCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
         <View style={styles.breakdownHeader}>
-          <Text style={styles.breakdownTitle}>{dormPct}% dorm meals this month</Text>
-          <Text style={styles.breakdownSub}>{dormCount} dorm • {outsideCount} outside</Text>
+          <Text style={[styles.breakdownTitle, { color: theme.colors.textPrimary }]}>{dormPct}% dorm meals this month</Text>
+          <Text style={[styles.breakdownSub, { color: theme.colors.textTertiary }]}>{dormCount} dorm • {outsideCount} outside</Text>
         </View>
-        <ProgressBar progress={dormRatio} color={colors.success} height={10} />
+        <ProgressBar progress={dormRatio} color={theme.colors.success} height={10} />
       </View>
 
       <View style={styles.sectionTitleRow}>
-        <Text style={styles.sectionTitle}>Daily Food Spending</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>Daily Food Spending</Text>
       </View>
       <SpendingChart dailyData={dailyChartData} />
 
       <View style={styles.sectionTitleRow}>
-        <Text style={styles.sectionTitle}>Logged Days</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>Logged Days</Text>
       </View>
     </View>
-  ), [avgDaily, changeMonth, dailyChartData, dormCount, dormPct, dormRatio, isCurrentMonth, outsideCount, selectedDate, totalSpend, year]);
+  ), [avgDaily, changeMonth, dailyChartData, dormCount, dormPct, dormRatio, isCurrentMonth, outsideCount, selectedDate, theme.borderRadius.md, theme.colors.accent, theme.colors.primary, theme.colors.success, theme.colors.surface, theme.colors.textPrimary, theme.colors.textSecondary, theme.colors.textTertiary, totalSpend, year]);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <AppHeader title="Meal History" showBack onBack={() => navigation.goBack()} />
       {isLoading ? (
-        <View style={styles.content}>
+        <View style={styles.loadingWrap}>
           <SkeletonCard height={44} style={styles.mb} />
           <SkeletonCard height={140} style={styles.mb} />
           <SkeletonCard height={180} />
@@ -170,28 +172,26 @@ const MealsHistoryScreen = React.memo(({ navigation }) => {
           }
         />
       )}
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.md },
-  listContent: { padding: spacing.md, paddingBottom: spacing.xxl },
-  monthSelector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  monthTitle: { fontSize: fontSizes.md, fontWeight: '700', color: colors.textPrimary },
-  arrowBtn: { padding: spacing.xs },
-  arrowText: { fontSize: fontSizes.xl, fontWeight: '700', color: colors.textPrimary },
-  arrowDisabled: { color: colors.textTertiary, opacity: 0.3 },
-  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: spacing.md },
-  statWrap: { width: '48%', marginBottom: spacing.sm },
-  breakdownCard: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  breakdownHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs + 2 },
-  breakdownTitle: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textPrimary },
-  breakdownSub: { fontSize: fontSizes.xs, color: colors.textTertiary },
-  sectionTitleRow: { marginTop: spacing.sm, marginBottom: spacing.xs + 2 },
-  sectionTitle: { fontSize: fontSizes.xs + 1, fontWeight: '800', color: colors.textSecondary, textTransform: 'uppercase', letterSpacing: 0.8 },
-  mb: { marginBottom: spacing.md },
+  loadingWrap: { paddingVertical: 8 },
+  listContent: { paddingVertical: 8, paddingBottom: 60 },
+  monthSelector: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, marginBottom: 16, borderWidth: 1 },
+  monthTitle: { fontSize: 14, fontWeight: '700' },
+  arrowBtn: { padding: 4 },
+  arrowText: { fontSize: 20, fontWeight: '700' },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 16 },
+  statWrap: { width: '48%', marginBottom: 8 },
+  breakdownCard: { padding: 16, marginBottom: 16, borderWidth: 1 },
+  breakdownHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  breakdownTitle: { fontSize: 11, fontWeight: '700' },
+  breakdownSub: { fontSize: 10 },
+  sectionTitleRow: { marginTop: 8, marginBottom: 6 },
+  sectionTitle: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8 },
+  mb: { marginBottom: 16 },
 });
 
 export default MealsHistoryScreen;

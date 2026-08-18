@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { FOOD_CATEGORIES } from '../../utils/constants';
 import Button from '../common/Button';
 import FoodSearchItem from './FoodSearchItem';
@@ -9,6 +9,7 @@ const ALL_CATEGORIES = ['All', ...FOOD_CATEGORIES];
 
 /** Food search, category filter chips, and selection preview section. */
 const FoodSearchSection = React.memo(({ onSelectFood, onManualAdd, onSearch, customFoods = [], isLogging = false }) => {
+  const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [results, setResults] = useState([]);
@@ -41,30 +42,44 @@ const FoodSearchSection = React.memo(({ onSelectFood, onManualAdd, onSearch, cus
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBar}>
+      <View style={[styles.searchBar, { backgroundColor: theme.colors.background, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
         <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput style={styles.searchInput} value={query} onChangeText={handleQueryChange} placeholder="Search Bangladeshi foods..." placeholderTextColor={colors.textTertiary} />
-        {isSearching && <ActivityIndicator size="small" color={colors.primary} />}
+        <TextInput
+          style={[styles.searchInput, { color: theme.colors.textPrimary }]}
+          value={query}
+          onChangeText={handleQueryChange}
+          placeholder="Search Bangladeshi foods..."
+          placeholderTextColor={theme.colors.textTertiary}
+        />
+        {isSearching && <ActivityIndicator size="small" color={theme.colors.primary} />}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
         {ALL_CATEGORIES.map((cat) => {
           const active = selectedCategory === cat;
           return (
-            <TouchableOpacity key={cat} style={[styles.catChip, active && styles.catActive]} onPress={() => setSelectedCategory(cat)} activeOpacity={0.8}>
-              <Text style={[styles.catText, active && styles.catTextActive]}>{cat}</Text>
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.catChip,
+                { backgroundColor: active ? theme.colors.primary : theme.colors.surface, borderRadius: theme.borderRadius.full, borderColor: active ? theme.colors.primary : `${theme.colors.textTertiary}30` },
+              ]}
+              onPress={() => setSelectedCategory(cat)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.catText, { color: active ? '#FFFFFF' : theme.colors.textSecondary }, active && styles.catTextActive]}>{cat}</Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
       {selectedItem && (
-        <View style={styles.previewCard}>
-          <View style={styles.previewTop}><Text style={styles.previewName} numberOfLines={1}>{selectedItem.name}</Text><Text style={styles.previewPrice}>৳{selectedItem.avg_price_bdt ?? selectedItem.price ?? 0}</Text></View>
+        <View style={[styles.previewCard, { backgroundColor: `${theme.colors.primary}08`, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.primary}40` }]}>
+          <View style={styles.previewTop}><Text style={[styles.previewName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{selectedItem.name}</Text><Text style={[styles.previewPrice, { color: theme.colors.accent }]}>৳{selectedItem.avg_price_bdt ?? selectedItem.price ?? 0}</Text></View>
           <Button label="Confirm Log" size="sm" onPress={() => onSelectFood(selectedItem)} loading={isLogging} fullWidth />
         </View>
       )}
       <View style={styles.resultsContainer}>
         {displayedList.length === 0 && !isSearching ? (
-          <View style={styles.emptyBox}><Text style={styles.emptyText}>No matching food found</Text></View>
+          <View style={styles.emptyBox}><Text style={[styles.emptyText, { color: theme.colors.textTertiary }]}>No matching food found</Text></View>
         ) : (
           displayedList.map((item, index) => (
             <FoodSearchItem key={item.id || `f-${index}`} item={item} onSelect={setSelectedItem} isSelected={selectedItem?.id === item.id} />
@@ -72,31 +87,30 @@ const FoodSearchSection = React.memo(({ onSelectFood, onManualAdd, onSearch, cus
         )}
       </View>
       <TouchableOpacity style={styles.manualBtn} onPress={onManualAdd} activeOpacity={0.75}>
-        <Text style={styles.manualBtnText}>+ Food not found? Add manually</Text>
+        <Text style={[styles.manualBtnText, { color: theme.colors.primary }]}>+ Food not found? Add manually</Text>
       </TouchableOpacity>
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { marginTop: spacing.sm },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.04)', borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(0, 0, 0, 0.08)', marginBottom: spacing.xs },
-  searchIcon: { fontSize: fontSizes.sm, marginRight: spacing.xs },
-  searchInput: { flex: 1, fontSize: fontSizes.sm, color: colors.textPrimary, padding: 0, backgroundColor: 'transparent' },
-  catScroll: { flexDirection: 'row', gap: 6, paddingVertical: spacing.xs, marginBottom: spacing.xs },
-  catChip: { paddingHorizontal: spacing.sm + 2, paddingVertical: 4, borderRadius: borderRadius.full, backgroundColor: 'rgba(0, 0, 0, 0.04)', borderWidth: 1, borderColor: 'transparent' },
-  catActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  catText: { fontSize: fontSizes.xs - 1, fontWeight: '700', color: colors.textSecondary },
-  catTextActive: { color: colors.surface },
-  previewCard: { backgroundColor: `${colors.primary}08`, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.sm, borderWidth: 1.5, borderColor: `${colors.primary}40` },
-  previewTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs },
-  previewName: { fontSize: fontSizes.md, fontWeight: '800', color: colors.textPrimary, flex: 1, marginRight: spacing.xs },
-  previewPrice: { fontSize: fontSizes.md, fontWeight: '800', color: colors.accent },
-  resultsContainer: { marginVertical: spacing.xs },
-  emptyBox: { padding: spacing.md, alignItems: 'center' },
-  emptyText: { fontSize: fontSizes.xs, color: colors.textTertiary, fontWeight: '600' },
-  manualBtn: { alignItems: 'center', paddingVertical: spacing.sm },
-  manualBtnText: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.primary },
+  container: { marginTop: 8 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1, marginBottom: 4 },
+  searchIcon: { fontSize: 12, marginRight: 4 },
+  searchInput: { flex: 1, fontSize: 12, padding: 0, backgroundColor: 'transparent' },
+  catScroll: { flexDirection: 'row', gap: 6, paddingVertical: 4, marginBottom: 4 },
+  catChip: { paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+  catText: { fontSize: 9, fontWeight: '700' },
+  catTextActive: { fontWeight: '800' },
+  previewCard: { padding: 16, marginBottom: 8, borderWidth: 1.5 },
+  previewTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  previewName: { fontSize: 14, fontWeight: '800', flex: 1, marginRight: 4 },
+  previewPrice: { fontSize: 14, fontWeight: '800' },
+  resultsContainer: { marginVertical: 4 },
+  emptyBox: { padding: 16, alignItems: 'center' },
+  emptyText: { fontSize: 10, fontWeight: '600' },
+  manualBtn: { alignItems: 'center', paddingVertical: 8 },
+  manualBtnText: { fontSize: 11, fontWeight: '700' },
 });
 
 export default FoodSearchSection;

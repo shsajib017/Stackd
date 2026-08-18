@@ -1,12 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useAnimatedStyle, withDelay, withSpring } from 'react-native-reanimated';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../config/theme';
+import { useTheme } from '../config/ThemeContext';
 
 /**
  * Speed Dial Overlay and staggered action items for bottom navigation.
  */
 const SpeedDialOverlay = React.memo(({ isOpen, onClose, onSelectAction, progress, bottomInset }) => {
+  const { theme } = useTheme();
+
   const overlayStyle = useAnimatedStyle(() => ({
     opacity: progress.value * 0.45,
   }));
@@ -40,28 +42,28 @@ const SpeedDialOverlay = React.memo(({ isOpen, onClose, onSelectAction, progress
   return (
     <>
       <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View style={[styles.overlay, overlayStyle]} />
+        <Animated.View style={[styles.overlay, { backgroundColor: theme.colors.textPrimary }, overlayStyle]} />
       </TouchableWithoutFeedback>
 
       <View style={[styles.speedDialContainer, { bottom: bottomInset + 85 }]}>
         <Animated.View style={[styles.dialItemWrapper, item3Style]}>
-          <TouchableOpacity style={styles.dialButton} onPress={() => onSelectAction('StudyStack')}>
+          <TouchableOpacity style={[styles.dialButton, { backgroundColor: theme.colors.surface }]} onPress={() => onSelectAction('StudyStack')}>
             <Text style={styles.dialEmoji}>📚</Text>
-            <Text style={styles.dialText}>Start study</Text>
+            <Text style={[styles.dialText, { color: theme.colors.textPrimary }]}>Start study</Text>
           </TouchableOpacity>
         </Animated.View>
 
         <Animated.View style={[styles.dialItemWrapper, item2Style]}>
-          <TouchableOpacity style={styles.dialButton} onPress={() => onSelectAction('AddExpenseModal')}>
+          <TouchableOpacity style={[styles.dialButton, { backgroundColor: theme.colors.surface }]} onPress={() => onSelectAction('AddExpenseModal')}>
             <Text style={styles.dialEmoji}>💰</Text>
-            <Text style={styles.dialText}>Add expense</Text>
+            <Text style={[styles.dialText, { color: theme.colors.textPrimary }]}>Add expense</Text>
           </TouchableOpacity>
         </Animated.View>
 
         <Animated.View style={[styles.dialItemWrapper, item1Style]}>
-          <TouchableOpacity style={styles.dialButton} onPress={() => onSelectAction('LogMealModal')}>
+          <TouchableOpacity style={[styles.dialButton, { backgroundColor: theme.colors.surface }]} onPress={() => onSelectAction('LogMealModal')}>
             <Text style={styles.dialEmoji}>🍽️</Text>
-            <Text style={styles.dialText}>Log meal</Text>
+            <Text style={[styles.dialText, { color: theme.colors.textPrimary }]}>Log meal</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -72,7 +74,6 @@ const SpeedDialOverlay = React.memo(({ isOpen, onClose, onSelectAction, progress
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.textPrimary,
     zIndex: 90,
   },
   speedDialContainer: {
@@ -87,20 +88,18 @@ const styles = StyleSheet.create({
   dialButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.xs + 2,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    ...shadows.md,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    elevation: 4,
   },
   dialEmoji: {
-    fontSize: fontSizes.lg,
-    marginRight: spacing.xs,
+    fontSize: 16,
+    marginRight: 4,
   },
   dialText: {
-    fontSize: fontSizes.sm,
-    color: colors.textPrimary,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
 

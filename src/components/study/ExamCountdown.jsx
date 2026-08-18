@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { getDaysRemaining } from '../../utils/formatDate';
 
 /**
  * Exam countdown pill badge showing remaining days until target exam date.
  */
 const ExamCountdown = React.memo(({ examDate, style }) => {
+  const { theme } = useTheme();
   if (!examDate) return null;
 
   const daysLeft = getDaysRemaining(examDate);
@@ -22,6 +23,7 @@ const ExamCountdown = React.memo(({ examDate, style }) => {
     <View
       style={[
         styles.badge,
+        { borderRadius: theme.borderRadius.full },
         isUrgent ? styles.urgentBadge : styles.normalBadge,
         style,
       ]}
@@ -29,7 +31,7 @@ const ExamCountdown = React.memo(({ examDate, style }) => {
       <Text
         style={[
           styles.text,
-          isUrgent ? styles.urgentText : styles.normalText,
+          isUrgent ? { color: theme.colors.error } : styles.normalText,
         ]}
         numberOfLines={1}
       >
@@ -42,9 +44,8 @@ const ExamCountdown = React.memo(({ examDate, style }) => {
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: borderRadius.full,
     alignSelf: 'flex-start',
   },
   normalBadge: {
@@ -54,14 +55,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
   text: {
-    fontSize: fontSizes.xs - 1,
+    fontSize: 9,
     fontWeight: '800',
   },
   normalText: {
-    color: colors.surface,
-  },
-  urgentText: {
-    color: colors.error,
+    color: '#FFFFFF',
   },
 });
 

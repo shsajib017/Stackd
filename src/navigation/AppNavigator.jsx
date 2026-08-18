@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTheme } from '../config/ThemeContext';
 import CustomTabBar from './CustomTabBar';
 import HomeStack from './HomeStack';
 import StudyStack from './StudyStack';
@@ -44,12 +45,30 @@ const MainTabs = React.memo(() => {
  * App Navigator coordinating 4 main tabs and global modal screens.
  */
 const AppNavigator = React.memo(() => {
+  const { theme } = useTheme();
+
   return (
-    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+    <RootStack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerStyle: {
+          backgroundColor: 'transparent',
+        },
+        headerShadowVisible: false,
+        headerTintColor: theme.colors.textPrimary,
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: theme.fontSizes.lg,
+          color: theme.colors.textPrimary,
+        },
+        headerBackTitleVisible: false,
+        headerTransparent: true,
+      }}
+    >
       <RootStack.Screen name="MainTabs" component={MainTabs} />
 
       {/* Full Screen & Bottom Sheet Modals */}
-      <RootStack.Group screenOptions={{ presentation: 'modal' }}>
+      <RootStack.Group screenOptions={{ presentation: 'modal', headerShown: false }}>
         <RootStack.Screen name="PomodoroModal" component={PomodoroModal} />
         <RootStack.Screen name="SessionCompleteModal" component={SessionCompleteModal} />
         <RootStack.Screen name="LogMealModal" component={LogMealModal} />

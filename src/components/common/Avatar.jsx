@@ -1,15 +1,9 @@
 import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Circular user avatar displaying a profile image or uppercase initials.
- *
- * @param {object} props
- * @param {string} props.name - User's full name for initials fallback.
- * @param {number} [props.size=48] - Avatar diameter in pixels.
- * @param {string} [props.imageUrl] - Profile picture URL.
- * @param {object|array} [props.style] - Style overrides.
  */
 const Avatar = React.memo(({
   name,
@@ -17,6 +11,8 @@ const Avatar = React.memo(({
   imageUrl,
   style,
 }) => {
+  const { theme } = useTheme();
+
   const initials = useMemo(() => {
     if (!name || typeof name !== 'string') return '?';
     const parts = name.trim().split(/\s+/);
@@ -38,14 +34,14 @@ const Avatar = React.memo(({
     return (
       <Image
         source={{ uri: imageUrl }}
-        style={[styles.image, containerStyle, style]}
+        style={[styles.image, { backgroundColor: theme.colors.surface }, containerStyle, style]}
         resizeMode="cover"
       />
     );
   }
 
   return (
-    <View style={[styles.fallbackContainer, containerStyle, style]}>
+    <View style={[styles.fallbackContainer, { backgroundColor: theme.colors.primary }, containerStyle, style]}>
       <Text style={[styles.initialsText, { fontSize }]}>{initials}</Text>
     </View>
   );
@@ -53,16 +49,15 @@ const Avatar = React.memo(({
 
 const styles = StyleSheet.create({
   image: {
-    backgroundColor: colors.textTertiary,
+    overflow: 'hidden',
   },
   fallbackContainer: {
-    backgroundColor: '#059669', // Emerald/Forest green
     alignItems: 'center',
     justifyContent: 'center',
   },
   initialsText: {
-    color: colors.surface,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontWeight: '800',
     textAlign: 'center',
   },
 });

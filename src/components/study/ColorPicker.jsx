@@ -1,19 +1,21 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors as themeColors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 export const DEFAULT_PALETTE = ['#1B4D6A', '#E53935', '#F5A623', '#43A047', '#8E24AA', '#00ACC1', '#F4511E', '#546E7A'];
 
 /** Reusable 8-color circular palette picker with checkmark selection. */
 const ColorPicker = React.memo(({ colors = DEFAULT_PALETTE, selected, onSelect }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Subject color</Text>
+      <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Subject color</Text>
       <View style={styles.paletteRow}>
         {colors.map((col) => {
           const isSelected = selected?.toLowerCase() === col.toLowerCase();
           return (
-            <TouchableOpacity key={col} style={[styles.colorCircle, { backgroundColor: col }]} onPress={() => onSelect?.(col)} activeOpacity={0.8}>
+            <TouchableOpacity key={col} style={[styles.colorCircle, { backgroundColor: col, borderRadius: theme.borderRadius.full }]} onPress={() => onSelect?.(col)} activeOpacity={0.8}>
               {isSelected ? <Text style={styles.checkIcon}>✓</Text> : null}
             </TouchableOpacity>
           );
@@ -24,11 +26,11 @@ const ColorPicker = React.memo(({ colors = DEFAULT_PALETTE, selected, onSelect }
 });
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.md },
-  label: { fontSize: fontSizes.sm, fontWeight: '700', color: themeColors.textPrimary, marginBottom: spacing.xs + 2 },
-  paletteRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm + 2 },
-  colorCircle: { width: 38, height: 38, borderRadius: borderRadius.full, alignItems: 'center', justifyContent: 'center' },
-  checkIcon: { color: themeColors.surface, fontSize: 18, fontWeight: '900' },
+  container: { marginBottom: 16 },
+  label: { fontSize: 12, fontWeight: '700', marginBottom: 6 },
+  paletteRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  colorCircle: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
+  checkIcon: { color: '#FFFFFF', fontSize: 18, fontWeight: '900' },
 });
 
 export default ColorPicker;

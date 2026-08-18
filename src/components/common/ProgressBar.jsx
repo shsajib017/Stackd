@@ -1,26 +1,21 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Visual progress bar component with track, active fill, and optional percentage label.
- *
- * @param {object} props
- * @param {number} props.progress - Progress ratio between 0 and 1.
- * @param {string} [props.color=colors.primary] - Progress fill color.
- * @param {number} [props.height=8] - Track height in pixels.
- * @param {boolean} [props.showLabel=false] - Display label above bar.
- * @param {string} [props.label] - Custom label text override.
- * @param {object|array} [props.style] - Style overrides.
  */
 const ProgressBar = React.memo(({
   progress,
-  color = colors.primary,
+  color,
   height = 8,
   showLabel = false,
   label,
   style,
 }) => {
+  const { theme } = useTheme();
+  const fillColor = color || theme.colors.primary;
+
   const clampedProgress = useMemo(() => {
     if (typeof progress !== 'number' || isNaN(progress)) return 0;
     return Math.min(Math.max(progress, 0), 1);
@@ -35,16 +30,16 @@ const ProgressBar = React.memo(({
     <View style={[styles.container, style]}>
       {showLabel ? (
         <View style={styles.labelRow}>
-          <Text style={styles.labelText}>{percentageText}</Text>
+          <Text style={[styles.labelText, { color: theme.colors.textSecondary }]}>{percentageText}</Text>
         </View>
       ) : null}
-      <View style={[styles.track, { height, borderRadius: height / 2 }]}>
+      <View style={[styles.track, { height, borderRadius: height / 2, backgroundColor: `${theme.colors.textTertiary}30` }]}>
         <View
           style={[
             styles.fill,
             {
               width: `${clampedProgress * 100}%`,
-              backgroundColor: color,
+              backgroundColor: fillColor,
               borderRadius: height / 2,
             },
           ]}
@@ -57,21 +52,19 @@ const ProgressBar = React.memo(({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginVertical: spacing.xs,
+    marginVertical: 4,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   labelText: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '600',
-    color: colors.textSecondary,
   },
   track: {
     width: '100%',
-    backgroundColor: `${colors.textTertiary}40`,
     overflow: 'hidden',
   },
   fill: {

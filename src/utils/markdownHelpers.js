@@ -1,5 +1,3 @@
-import { colors, fontSizes, spacing } from '../config/theme';
-
 /**
  * Strips markdown syntax from a string, returning plain text.
  * @param {string} text - Raw markdown string.
@@ -64,11 +62,18 @@ export const getSavedAgoText = (timestamp) => {
   return hrs === 1 ? 'Saved 1 hr ago' : `Saved ${hrs} hrs ago`;
 };
 
+export const getMarkdownStyles = (theme) => ({
+  body: { color: theme?.colors?.textPrimary || '#1A1A2A', fontSize: 13, lineHeight: 22 },
+  heading1: { fontSize: 20, fontWeight: '800', color: theme?.colors?.primary || '#1B4D6A', marginBottom: 4 },
+  heading2: { fontSize: 16, fontWeight: '700', color: theme?.colors?.primary || '#1B4D6A', marginBottom: 4 },
+  hr: { backgroundColor: `${theme?.colors?.textTertiary || '#9E9E9E'}30`, height: 1, marginVertical: 8 },
+});
+
 export const markdownStyles = {
-  body: { color: colors.textPrimary, fontSize: fontSizes.sm + 1, lineHeight: 22 },
-  heading1: { fontSize: fontSizes.xl, fontWeight: '800', color: colors.primary, marginBottom: spacing.xs },
-  heading2: { fontSize: fontSizes.lg, fontWeight: '700', color: colors.primary, marginBottom: spacing.xs },
-  hr: { backgroundColor: `${colors.textTertiary}30`, height: 1, marginVertical: spacing.sm },
+  body: { fontSize: 13, lineHeight: 22 },
+  heading1: { fontSize: 20, fontWeight: '800', marginBottom: 4 },
+  heading2: { fontSize: 16, fontWeight: '700', marginBottom: 4 },
+  hr: { height: 1, marginVertical: 8 },
 };
 
 export default {
@@ -77,5 +82,6 @@ export default {
   getWordCount,
   getReadingTime,
   getSavedAgoText,
+  getMarkdownStyles,
   markdownStyles,
 };

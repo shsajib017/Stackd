@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useSavings from '../../hooks/useSavings';
 import useUIStore from '../../store/useUIStore';
 import { formatBDT } from '../../utils/formatCurrency';
@@ -13,32 +13,41 @@ import EmptyState from '../../components/common/EmptyState';
 import ProgressBar from '../../components/common/ProgressBar';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
-const GoalCard = React.memo(({ goal, onCardPress, onAddFundsPress }) => {
+const GoalCard = React.memo(({ goal, onCardPress, onAddFundsPress, theme }) => {
   const current = Number(goal.current_amount || 0);
   const target = Number(goal.target_amount || 1);
   const progress = target > 0 ? Math.min(current / target, 1) : 0;
   const daysLeft = getDaysRemaining(goal.deadline);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={() => onCardPress(goal)} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[styles.card, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}
+      onPress={() => onCardPress(goal)}
+      activeOpacity={0.8}
+    >
       <View style={styles.cardTop}>
         <View style={styles.cardHeaderLeft}>
           <Text style={styles.cardEmoji}>{goal.emoji || '🎯'}</Text>
-          <Text style={styles.cardTitle} numberOfLines={1}>{goal.title}</Text>
+          <Text style={[styles.cardTitle, { color: theme.colors.textPrimary }]} numberOfLines={1}>{goal.title}</Text>
         </View>
-        <TouchableOpacity style={styles.addFundsBtn} onPress={() => onAddFundsPress(goal)}>
-          <Text style={styles.addFundsText}>+ Add funds</Text>
+        <TouchableOpacity style={[styles.addFundsBtn, { backgroundColor: `${theme.colors.accent}20` }]} onPress={() => onAddFundsPress(goal)}>
+          <Text style={[styles.addFundsText, { color: theme.colors.accent }]}>+ Add funds</Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.amountProgressText}>{formatBDT(current)} <Text style={styles.targetLabel}>of {formatBDT(target)}</Text></Text>
-      <ProgressBar progress={progress} color={colors.accent} height={8} showLabel={false} />
+      <Text style={[styles.amountProgressText, { color: theme.colors.textPrimary }]}>
+        {formatBDT(current)} <Text style={[styles.targetLabel, { color: theme.colors.textSecondary }]}>of {formatBDT(target)}</Text>
+      </Text>
+      <ProgressBar progress={progress} color={theme.colors.accent} height={8} showLabel={false} />
 
       <View style={styles.cardFooter}>
-        <Text style={styles.footerText}>📅 {goal.deadline ? formatDateShort(goal.deadline) : 'No deadline'}</Text>
-        <Text style={[styles.footerText, daysLeft <= 7 && styles.daysUrgent]}>⏳ {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left</Text>
+        <Text style={[styles.footerText, { color: theme.colors.textSecondary }]}>📅 {goal.deadline ? formatDateShort(goal.deadline) : 'No deadline'}</Text>
+        <Text style={[styles.footerText, { color: theme.colors.textSecondary }, daysLeft <= 7 && { color: theme.colors.error, fontWeight: '700' }]}>
+          ⏳ {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -47,6 +56,7 @@ const GoalCard = React.memo(({ goal, onCardPress, onAddFundsPress }) => {
 /** Savings Goals Overview & Management Screen. */
 const SavingsGoalsScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const fabBottom = insets.bottom + 80 + 16;
   const { goals, isLoading, fetchGoals, addFunds } = useSavings();
   const showToast = useUIStore((state) => state.showToast);
@@ -77,15 +87,15 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
   const renderHeader = useCallback(() => (
     <View>
       <View style={styles.summaryRow}>
-        <View style={styles.statWrapper}><StatCard icon="💰" label="Total Saved" value={formatBDT(totalSaved)} color={colors.success} /></View>
-        <View style={styles.statWrapper}><StatCard icon="🎯" label="Active Goals" value={String(goals?.length || 0)} color={colors.primary} /></View>
+        <View style={styles.statWrapper}><StatCard icon="💰" label="Total Saved" value={formatBDT(totalSaved)} color={theme.colors.success} /></View>
+        <View style={styles.statWrapper}><StatCard icon="🎯" label="Active Goals" value={String(goals?.length || 0)} color={theme.colors.primary} /></View>
       </View>
       {isLoading && <View style={styles.skeletonBox}><SkeletonCard height={140} /><SkeletonCard height={140} /></View>}
     </View>
-  ), [goals?.length, isLoading, totalSaved]);
+  ), [goals?.length, isLoading, theme.colors.primary, theme.colors.success, totalSaved]);
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader title="Savings Goals" showBack onBack={() => navigation.goBack()} />
 
       <FlatList
@@ -93,7 +103,7 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
         renderItem={({ item }) => (
-          <GoalCard goal={item} onCardPress={(g) => navigation.navigate('EditGoalScreen', { goal: g })} onAddFundsPress={(g) => { setFundingGoal(g); setFundingAmount(''); }} />
+          <GoalCard goal={item} theme={theme} onCardPress={(g) => navigation.navigate('EditGoalScreen', { goal: g })} onAddFundsPress={(g) => { setFundingGoal(g); setFundingAmount(''); }} />
         )}
         ListEmptyComponent={!isLoading ? (
           <EmptyState icon="🎯" title="No savings goals yet" subtitle="Set a goal and start saving" actionLabel="Create goal" onAction={() => navigation.navigate('CreateGoalScreen')} />
@@ -102,8 +112,8 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
         showsVerticalScrollIndicator={false}
       />
 
-      <TouchableOpacity style={[styles.fab, { bottom: fabBottom }]} onPress={() => navigation.navigate('CreateGoalScreen')} activeOpacity={0.85}>
-        <Text style={styles.fabIcon}>+</Text>
+      <TouchableOpacity style={[styles.fab, { bottom: fabBottom, backgroundColor: theme.colors.accent }]} onPress={() => navigation.navigate('CreateGoalScreen')} activeOpacity={0.85}>
+        <Text style={[styles.fabIcon, { color: theme.colors.surface }]}>+</Text>
       </TouchableOpacity>
 
       {Boolean(fundingGoal) && (
@@ -111,12 +121,20 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
           <TouchableWithoutFeedback onPress={() => setFundingGoal(null)}>
             <View style={styles.modalOverlay}>
               <TouchableWithoutFeedback>
-                <View style={styles.modalCard}>
-                  <Text style={styles.modalTitle}>Add Funds</Text>
-                  <Text style={styles.modalSubtitle}>{fundingGoal.title}</Text>
+                <View style={[styles.modalCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg }]}>
+                  <Text style={[styles.modalTitle, { color: theme.colors.textPrimary }]}>Add Funds</Text>
+                  <Text style={[styles.modalSubtitle, { color: theme.colors.textSecondary }]}>{fundingGoal.title}</Text>
                   <View style={styles.amountInputRow}>
-                    <Text style={styles.inputPrefix}>৳</Text>
-                    <TextInput style={styles.amountInput} value={fundingAmount} onChangeText={setFundingAmount} placeholder="0.00" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" autoFocus />
+                    <Text style={[styles.inputPrefix, { color: theme.colors.accent }]}>৳</Text>
+                    <TextInput
+                      style={[styles.amountInput, { color: theme.colors.textPrimary }]}
+                      value={fundingAmount}
+                      onChangeText={setFundingAmount}
+                      placeholder="0.00"
+                      placeholderTextColor={theme.colors.textTertiary}
+                      keyboardType="decimal-pad"
+                      autoFocus
+                    />
                   </View>
                   <View style={styles.modalButtonRow}>
                     <Button label="Cancel" variant="secondary" onPress={() => setFundingGoal(null)} style={styles.modalBtn} />
@@ -128,43 +146,36 @@ const SavingsGoalsScreen = React.memo(({ navigation }) => {
           </TouchableWithoutFeedback>
         </Modal>
       )}
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingBottom: spacing.sm, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}20` },
-  backBtn: { padding: spacing.xs },
-  backArrow: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  headerTitle: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary },
-  headerSpacer: { width: 32 },
-  content: { padding: spacing.md },
-  summaryRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  content: { paddingVertical: 8 },
+  summaryRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
   statWrapper: { flex: 1 },
-  skeletonBox: { gap: spacing.sm },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.sm, ...shadows.sm, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
-  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: spacing.sm },
-  cardEmoji: { fontSize: 22, marginRight: spacing.xs },
-  cardTitle: { fontSize: fontSizes.md, fontWeight: '700', color: colors.textPrimary, flex: 1 },
-  addFundsBtn: { backgroundColor: `${colors.accent}20`, paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: borderRadius.full },
-  addFundsText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.accent },
-  amountProgressText: { fontSize: fontSizes.sm, fontWeight: '800', color: colors.textPrimary, marginVertical: spacing.xs },
-  targetLabel: { fontSize: fontSizes.xs, fontWeight: '500', color: colors.textSecondary },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs + 2 },
-  footerText: { fontSize: fontSizes.xs, color: colors.textSecondary, fontWeight: '500' },
-  daysUrgent: { color: colors.error, fontWeight: '700' },
-  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', ...shadows.md },
-  fabIcon: { fontSize: 28, color: colors.surface, lineHeight: 30, fontWeight: '700' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: spacing.xl },
-  modalCard: { width: '100%', backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.xl, ...shadows.lg },
-  modalTitle: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' },
-  modalSubtitle: { fontSize: fontSizes.sm, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.md },
-  amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: spacing.md },
-  inputPrefix: { fontSize: fontSizes.xxl, fontWeight: '800', color: colors.accent, marginRight: spacing.xs },
-  amountInput: { fontSize: fontSizes.xxl, fontWeight: '800', color: colors.textPrimary, minWidth: 100, textAlign: 'center' },
-  modalButtonRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  skeletonBox: { gap: 8 },
+  card: { padding: 16, marginBottom: 8, borderWidth: 1, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  cardHeaderLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 },
+  cardEmoji: { fontSize: 22, marginRight: 4 },
+  cardTitle: { fontSize: 14, fontWeight: '700', flex: 1 },
+  addFundsBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
+  addFundsText: { fontSize: 10, fontWeight: '700' },
+  amountProgressText: { fontSize: 12, fontWeight: '800', marginVertical: 4 },
+  targetLabel: { fontSize: 10, fontWeight: '500' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  footerText: { fontSize: 10, fontWeight: '500' },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4 },
+  fabIcon: { fontSize: 28, lineHeight: 30, fontWeight: '700' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalCard: { width: '100%', padding: 24 },
+  modalTitle: { fontSize: 16, fontWeight: '800', textAlign: 'center' },
+  modalSubtitle: { fontSize: 12, textAlign: 'center', marginBottom: 16 },
+  amountInputRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 16 },
+  inputPrefix: { fontSize: 24, fontWeight: '800', marginRight: 4 },
+  amountInput: { fontSize: 24, fontWeight: '800', minWidth: 100, textAlign: 'center' },
+  modalButtonRow: { flexDirection: 'row', gap: 8, marginTop: 16 },
   modalBtn: { flex: 1 },
 });
 

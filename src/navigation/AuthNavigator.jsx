@@ -6,6 +6,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import ProfileSetupScreen from '../screens/auth/ProfileSetupScreen';
+import { useTheme } from '../config/ThemeContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,8 +14,26 @@ const Stack = createNativeStackNavigator();
  * Navigation stack for onboarding and authentication flows.
  */
 const AuthNavigator = React.memo(() => {
+  const { theme } = useTheme();
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerStyle: {
+          backgroundColor: 'transparent',
+        },
+        headerShadowVisible: false,
+        headerTintColor: theme.colors.textPrimary,
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: theme.fontSizes.lg,
+          color: theme.colors.textPrimary,
+        },
+        headerBackTitleVisible: false,
+        headerTransparent: true,
+      }}
+    >
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />

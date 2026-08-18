@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useStudySessions from '../../hooks/useStudySessions';
 import useStreak from '../../hooks/useStreak';
@@ -19,10 +19,12 @@ import SectionHeader from '../../components/common/SectionHeader';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import SideDrawer from '../../components/common/SideDrawer';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 /** Full Study Hub Screen for scheduling, active timers, subjects, and weekly progress. */
 const StudyScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [subjects, setSubjects] = useState([]);
@@ -118,24 +120,28 @@ const StudyScreen = React.memo(({ navigation }) => {
 
       <SectionHeader title="Quick Actions" style={styles.sectionMargin} />
       <View style={styles.toolsRow}>
-        <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PomodoroModal')} activeOpacity={0.75}>
-          <Text style={styles.toolIcon}>⏱️</Text><Text style={styles.toolTitle}>Pomodoro</Text><Text style={styles.toolSub}>Focus timer</Text>
+        <TouchableOpacity style={[styles.toolCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]} onPress={() => navigation.navigate('PomodoroModal')} activeOpacity={0.75}>
+          <Text style={styles.toolIcon}>⏱️</Text>
+          <Text style={[styles.toolTitle, { color: theme.colors.textPrimary }]}>Pomodoro</Text>
+          <Text style={[styles.toolSub, { color: theme.colors.textSecondary }]}>Focus timer</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.toolCard} onPress={() => navigation.navigate('PyqHubScreen')} activeOpacity={0.75}>
-          <Text style={styles.toolIcon}>📚</Text><Text style={styles.toolTitle}>PYQ Hub</Text><Text style={styles.toolSub}>Previous papers</Text>
+        <TouchableOpacity style={[styles.toolCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]} onPress={() => navigation.navigate('PYQUploadScreen')} activeOpacity={0.75}>
+          <Text style={styles.toolIcon}>📚</Text>
+          <Text style={[styles.toolTitle, { color: theme.colors.textPrimary }]}>PYQ Hub</Text>
+          <Text style={[styles.toolSub, { color: theme.colors.textSecondary }]}>Previous papers</Text>
         </TouchableOpacity>
       </View>
     </View>
-  ), [formattedTime, isBreak, isRunning, markComplete, navigation, sessions, sessionsLoading, streakLoading, studyStreak, subjectProgressMap, subjects, subjectsLoading, todaySessions]);
+  ), [formattedTime, isBreak, isRunning, markComplete, navigation, sessions, sessionsLoading, streakLoading, studyStreak, subjectProgressMap, subjects, subjectsLoading, theme.borderRadius.lg, theme.colors.primary, theme.colors.surface, theme.colors.textPrimary, theme.colors.textSecondary, theme.colors.textTertiary, todaySessions]);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <AppHeader
         title="Study"
         onMenuPress={() => setDrawerVisible(true)}
         rightElement={
-          <View style={styles.headerRightBadge}>
-            <Text style={styles.headerRightText}>⏱ {weeklyHours} hrs</Text>
+          <View style={[styles.headerRightBadge, { backgroundColor: `${theme.colors.primary}15` }]}>
+            <Text style={[styles.headerRightText, { color: theme.colors.primary }]}>⏱ {weeklyHours} hrs</Text>
           </View>
         }
       />
@@ -147,30 +153,33 @@ const StudyScreen = React.memo(({ navigation }) => {
         showsVerticalScrollIndicator={false}
       />
 
-      <TouchableOpacity style={[styles.fab, { bottom: insets.bottom + 80 + 16 }]} onPress={() => navigation.navigate('ScheduleScreen')} activeOpacity={0.8}>
-        <Text style={styles.fabIcon}>+</Text>
+      <TouchableOpacity
+        style={[styles.fab, { bottom: insets.bottom + 80 + 16, backgroundColor: theme.colors.primary }]}
+        onPress={() => navigation.navigate('ScheduleScreen')}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.fabIcon, { color: '#FFFFFF' }]}>+</Text>
       </TouchableOpacity>
 
       <SideDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)} navigation={navigation} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  headerRightBadge: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.sm + 2, paddingVertical: 4, borderRadius: borderRadius.full },
-  headerRightText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
-  scrollContent: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.xxl + 80 },
-  sectionMargin: { marginTop: spacing.md },
-  mb: { marginBottom: spacing.sm },
-  subjectsList: { gap: spacing.sm, paddingVertical: spacing.xs },
-  toolsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
-  toolCard: { flex: 1, backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.lg, borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
+  headerRightBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
+  headerRightText: { fontSize: 10, fontWeight: '700' },
+  scrollContent: { paddingVertical: 8, paddingBottom: 120 },
+  sectionMargin: { marginTop: 16 },
+  mb: { marginBottom: 8 },
+  subjectsList: { gap: 8, paddingVertical: 4 },
+  toolsRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  toolCard: { flex: 1, padding: 16, borderWidth: 1, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
   toolIcon: { fontSize: 24, marginBottom: 4 },
-  toolTitle: { fontSize: fontSizes.sm + 1, fontWeight: '700', color: colors.textPrimary },
-  toolSub: { fontSize: fontSizes.xs, color: colors.textSecondary, marginTop: 2 },
-  fab: { position: 'absolute', right: spacing.md, width: 56, height: 56, borderRadius: borderRadius.full, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 4, zIndex: 99 },
-  fabIcon: { fontSize: 28, color: colors.surface, fontWeight: 'bold', lineHeight: 30 },
+  toolTitle: { fontSize: 13, fontWeight: '700' },
+  toolSub: { fontSize: 10, marginTop: 2 },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', elevation: 5, zIndex: 99 },
+  fabIcon: { fontSize: 28, fontWeight: 'bold', lineHeight: 30 },
 });
 
 export default StudyScreen;

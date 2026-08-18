@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Universal App Top Bar Header for Main Screens and Subscreens.
@@ -15,6 +15,7 @@ const AppHeader = React.memo(({
   rightElement,
 }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 16) }]}>
@@ -26,7 +27,7 @@ const AppHeader = React.memo(({
             hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
             activeOpacity={0.6}
           >
-            <Text style={styles.backIcon}>←</Text>
+            <Text style={[styles.backIcon, { color: theme.colors.textPrimary }]}>←</Text>
           </TouchableOpacity>
         ) : onMenuPress ? (
           <TouchableOpacity
@@ -35,13 +36,13 @@ const AppHeader = React.memo(({
             hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
             activeOpacity={0.6}
           >
-            <Text style={styles.menuIcon}>☰</Text>
+            <Text style={[styles.menuIcon, { color: theme.colors.textPrimary }]}>☰</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.actionPlaceholder} />
         )}
 
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]} numberOfLines={1}>
           {title}
         </Text>
 
@@ -55,16 +56,14 @@ const AppHeader = React.memo(({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: `${colors.textTertiary}20`,
+    backgroundColor: 'transparent',
   },
   contentRow: {
     height: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: 16,
   },
   actionBtn: {
     width: 44,
@@ -77,20 +76,17 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     fontSize: 24,
-    color: colors.textPrimary,
     fontWeight: '700',
   },
   backIcon: {
     fontSize: 24,
-    color: colors.textPrimary,
     fontWeight: '800',
   },
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: fontSizes.lg,
+    fontSize: 16,
     fontWeight: '800',
-    color: colors.textPrimary,
   },
   rightBox: {
     minWidth: 44,

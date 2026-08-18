@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatBDT } from '../../utils/formatCurrency';
 
 /**
  * Continuous daily spending chart with Y-axis grid, X-axis intervals, and interactive day highlights.
  */
 const SpendingChart = React.memo(({ dailyData = [] }) => {
+  const { theme } = useTheme();
   const [selectedBar, setSelectedBar] = useState(null);
 
   const maxAmount = useMemo(() => {
@@ -17,27 +18,36 @@ const SpendingChart = React.memo(({ dailyData = [] }) => {
   const midAmount = Math.round(maxAmount / 2);
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.md,
+          borderColor: `${theme.colors.textTertiary}20`,
+        },
+      ]}
+    >
       {/* Selected Day Tooltip */}
       {selectedBar ? (
-        <View style={styles.tooltip}>
-          <Text style={styles.tooltipText}>
-            Day {selectedBar.day}: <Text style={styles.tooltipAmount}>{formatBDT(selectedBar.amount)}</Text>
+        <View style={[styles.tooltip, { backgroundColor: `${theme.colors.primary}18`, borderRadius: theme.borderRadius.sm }]}>
+          <Text style={[styles.tooltipText, { color: theme.colors.textPrimary }]}>
+            Day {selectedBar.day}: <Text style={[styles.tooltipAmount, { color: theme.colors.primary }]}>{formatBDT(selectedBar.amount)}</Text>
           </Text>
         </View>
       ) : (
         <View style={styles.headerRow}>
-          <Text style={styles.chartSubtitle}>Tap any bar for details</Text>
-          <Text style={styles.peakLabel}>Peak: {formatBDT(maxAmount)}</Text>
+          <Text style={[styles.chartSubtitle, { color: theme.colors.textSecondary }]}>Tap any bar for details</Text>
+          <Text style={[styles.peakLabel, { color: theme.colors.primary }]}>Peak: {formatBDT(maxAmount)}</Text>
         </View>
       )}
 
       <View style={styles.chartArea}>
         {/* Y Axis Grid Lines & Labels */}
         <View style={styles.gridOverlay} pointerEvents="none">
-          <View style={styles.gridLineRow}><Text style={styles.yLabel}>৳{maxAmount >= 1000 ? `${Math.round(maxAmount / 1000)}k` : maxAmount}</Text><View style={styles.gridLine} /></View>
-          <View style={styles.gridLineRow}><Text style={styles.yLabel}>৳{midAmount >= 1000 ? `${Math.round(midAmount / 1000)}k` : midAmount}</Text><View style={styles.gridLine} /></View>
-          <View style={styles.gridLineRow}><Text style={styles.yLabel}>0</Text><View style={styles.gridBaseline} /></View>
+          <View style={styles.gridLineRow}><Text style={[styles.yLabel, { color: theme.colors.textTertiary }]}>৳{maxAmount >= 1000 ? `${Math.round(maxAmount / 1000)}k` : maxAmount}</Text><View style={[styles.gridLine, { backgroundColor: `${theme.colors.textTertiary}15` }]} /></View>
+          <View style={styles.gridLineRow}><Text style={[styles.yLabel, { color: theme.colors.textTertiary }]}>৳{midAmount >= 1000 ? `${Math.round(midAmount / 1000)}k` : midAmount}</Text><View style={[styles.gridLine, { backgroundColor: `${theme.colors.textTertiary}15` }]} /></View>
+          <View style={styles.gridLineRow}><Text style={[styles.yLabel, { color: theme.colors.textTertiary }]}>0</Text><View style={[styles.gridBaseline, { backgroundColor: `${theme.colors.textTertiary}35` }]} /></View>
         </View>
 
         {/* Bars Container */}
@@ -59,13 +69,13 @@ const SpendingChart = React.memo(({ dailyData = [] }) => {
                     style={[
                       styles.barFill,
                       { height: `${heightPct}%` },
-                      hasSpending ? styles.barActive : styles.barZero,
-                      isSelected && styles.barSelected,
+                      hasSpending ? { backgroundColor: theme.colors.primary } : { backgroundColor: `${theme.colors.textTertiary}25` },
+                      isSelected && { backgroundColor: theme.colors.accent, width: 6 },
                     ]}
                   />
                 </View>
                 {(item.day === 1 || item.day % 5 === 0) ? (
-                  <Text style={[styles.xLabel, isSelected && styles.xLabelActive]}>{item.day}</Text>
+                  <Text style={[styles.xLabel, { color: theme.colors.textTertiary }, isSelected && { color: theme.colors.primary, fontWeight: '800' }]}>{item.day}</Text>
                 ) : (
                   <View style={styles.xSpacer} />
                 )}
@@ -80,32 +90,26 @@ const SpendingChart = React.memo(({ dailyData = [] }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    ...shadows.sm,
+    padding: 16,
     borderWidth: 1,
-    borderColor: `${colors.textTertiary}20`,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
-  chartSubtitle: { fontSize: fontSizes.xs, color: colors.textSecondary },
-  peakLabel: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
+  chartSubtitle: { fontSize: 10 },
+  peakLabel: { fontSize: 10, fontWeight: '700' },
   tooltip: {
-    backgroundColor: `${colors.primary}18`,
     paddingVertical: 4,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
+    paddingHorizontal: 8,
     alignSelf: 'flex-start',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
-  tooltipText: { fontSize: fontSizes.xs, color: colors.textPrimary, fontWeight: '600' },
-  tooltipAmount: { color: colors.primary, fontWeight: '800' },
-  chartArea: { height: 140, position: 'relative', marginTop: spacing.xs },
+  tooltipText: { fontSize: 10, fontWeight: '600' },
+  tooltipAmount: { fontWeight: '800' },
+  chartArea: { height: 140, position: 'relative', marginTop: 4 },
   gridOverlay: {
     position: 'absolute',
     left: 0,
@@ -115,9 +119,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   gridLineRow: { flexDirection: 'row', alignItems: 'center' },
-  yLabel: { width: 28, fontSize: 8, color: colors.textTertiary, textAlign: 'right', marginRight: 4 },
-  gridLine: { flex: 1, height: 1, backgroundColor: `${colors.textTertiary}15` },
-  gridBaseline: { flex: 1, height: 1, backgroundColor: `${colors.textTertiary}35` },
+  yLabel: { width: 28, fontSize: 8, textAlign: 'right', marginRight: 4 },
+  gridLine: { flex: 1, height: 1 },
+  gridBaseline: { flex: 1, height: 1 },
   barsContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -128,11 +132,7 @@ const styles = StyleSheet.create({
   barColumn: { flex: 1, height: '100%', alignItems: 'center', justifyContent: 'flex-end' },
   barTrack: { width: '100%', height: 115, justifyContent: 'flex-end', alignItems: 'center' },
   barFill: { width: 4, borderRadius: 2 },
-  barZero: { backgroundColor: `${colors.textTertiary}25` },
-  barActive: { backgroundColor: colors.primary },
-  barSelected: { backgroundColor: colors.accent, width: 6 },
-  xLabel: { fontSize: 8, color: colors.textTertiary, marginTop: 4, height: 14, textAlign: 'center' },
-  xLabelActive: { color: colors.primary, fontWeight: '800' },
+  xLabel: { fontSize: 8, marginTop: 4, height: 14, textAlign: 'center' },
   xSpacer: { height: 14, marginTop: 4 },
 });
 

@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { spacing } from '../../config/theme';
 import EmptyState from '../common/EmptyState';
 import SkeletonCard from '../common/SkeletonCard';
 import HotTopicItem from './HotTopicItem';
@@ -51,9 +50,9 @@ const HotTopicsTab = React.memo(({ hotTopics = [], subjectId, navigation, isLoad
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  loadingContainer: { padding: spacing.md },
-  listContent: { padding: spacing.md, paddingBottom: 100 },
-  mb: { marginBottom: spacing.sm },
+  loadingContainer: { padding: 16 },
+  listContent: { padding: 16, paddingBottom: 100 },
+  mb: { marginBottom: 8 },
 });
 
 export default HotTopicsTab;

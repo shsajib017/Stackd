@@ -1,15 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Combined activity streak card displaying total days and module indicators.
- *
- * @param {object} props
- * @param {number} props.streakCount - Current active consecutive days.
- * @param {boolean} props.hasExpenseToday - Expense logged today status.
- * @param {boolean} props.hasSessionToday - Study session completed today status.
- * @param {boolean} props.hasMealToday - Meal logged today status.
  */
 const StreakCard = React.memo(({
   streakCount = 0,
@@ -17,6 +11,8 @@ const StreakCard = React.memo(({
   hasSessionToday = false,
   hasMealToday = false,
 }) => {
+  const { theme } = useTheme();
+
   const modules = [
     { icon: '💰', label: 'Budget', done: hasExpenseToday },
     { icon: '📚', label: 'Study', done: hasSessionToday },
@@ -24,18 +20,35 @@ const StreakCard = React.memo(({
   ];
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.textTertiary}20`,
+          borderWidth: 1,
+        },
+      ]}
+    >
       <View style={styles.streakCenter}>
-        <Text style={styles.streakNumber}>{streakCount}</Text>
-        <Text style={styles.streakLabel}>day streak 🔥</Text>
+        <Text style={[styles.streakNumber, { color: theme.colors.primary }]}>{streakCount}</Text>
+        <Text style={[styles.streakLabel, { color: theme.colors.textSecondary }]}>day streak 🔥</Text>
       </View>
 
-      <View style={styles.indicatorsRow}>
+      <View style={[styles.indicatorsRow, { borderTopColor: `${theme.colors.textTertiary}20` }]}>
         {modules.map((item) => (
           <View key={item.label} style={styles.indicatorItem}>
             <Text style={styles.indicatorIcon}>{item.icon}</Text>
-            <View style={[styles.tickBadge, item.done ? styles.tickBadgeDone : styles.tickBadgePending]}>
-              <Text style={styles.tickText}>{item.done ? '✓' : '○'}</Text>
+            <View
+              style={[
+                styles.tickBadge,
+                item.done
+                  ? { backgroundColor: theme.colors.success }
+                  : { backgroundColor: `${theme.colors.textTertiary}50` },
+              ]}
+            >
+              <Text style={[styles.tickText, { color: '#FFFFFF' }]}>{item.done ? '✓' : '○'}</Text>
             </View>
           </View>
         ))}
@@ -46,39 +59,33 @@ const StreakCard = React.memo(({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.xl,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    marginVertical: spacing.sm,
-    ...shadows.sm,
+    marginVertical: 8,
   },
   streakCenter: {
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   streakNumber: {
-    fontSize: fontSizes.xxxl + 8,
+    fontSize: 40,
     fontWeight: '900',
-    color: colors.primary,
     lineHeight: 48,
   },
   streakLabel: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textSecondary,
     marginTop: 2,
   },
   indicatorsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.lg,
+    gap: 24,
     width: '100%',
-    paddingTop: spacing.sm,
+    paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: `${colors.textTertiary}30`,
   },
   indicatorItem: {
     flexDirection: 'row',
@@ -95,15 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tickBadgeDone: {
-    backgroundColor: colors.success,
-  },
-  tickBadgePending: {
-    backgroundColor: colors.textTertiary,
-    opacity: 0.5,
-  },
   tickText: {
-    color: colors.surface,
     fontSize: 11,
     fontWeight: 'bold',
   },

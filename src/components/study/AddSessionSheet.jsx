@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatDate, formatDateForDB } from '../../utils/formatDate';
 import Button from '../common/Button';
 
@@ -10,6 +10,7 @@ const DURATIONS = [25, 45, 60, 90];
  * Bottom Sheet Modal for manually scheduling a study session on a selected date.
  */
 const AddSessionSheet = React.memo(({ visible, onClose, selectedDate = new Date(), subjects = [], onAddSession }) => {
+  const { theme } = useTheme();
   const [selectedSubjectId, setSelectedSubjectId] = useState(subjects[0]?.id || null);
   const [duration, setDuration] = useState(45);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,30 +33,52 @@ const AddSessionSheet = React.memo(({ visible, onClose, selectedDate = new Date(
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
-          <Text style={styles.title}>Schedule Study Session</Text>
-          <Text style={styles.dateLabel}>📅 {formatDate(selectedDate)}</Text>
+      <View style={[styles.backdrop, { backgroundColor: `${theme.colors.textPrimary}80` }]}>
+        <View style={[styles.sheet, { backgroundColor: theme.colors.surface, borderTopLeftRadius: theme.borderRadius.lg, borderTopRightRadius: theme.borderRadius.lg }]}>
+          <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Schedule Study Session</Text>
+          <Text style={[styles.dateLabel, { color: theme.colors.primary }]}>📅 {formatDate(selectedDate)}</Text>
 
-          <Text style={styles.sectionLabel}>Select Subject</Text>
+          <Text style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}>Select Subject</Text>
           <View style={styles.subjectRow}>
             {subjects.map((sub) => {
               const active = (selectedSubjectId || subjects[0]?.id) === sub.id;
               return (
-                <TouchableOpacity key={sub.id} style={[styles.subPill, active && { backgroundColor: sub.color || colors.primary }]} onPress={() => setSelectedSubjectId(sub.id)}>
-                  <Text style={[styles.subText, active && styles.textWhite]}>{sub.name}</Text>
+                <TouchableOpacity
+                  key={sub.id}
+                  style={[
+                    styles.subPill,
+                    {
+                      backgroundColor: active ? (sub.color || theme.colors.primary) : theme.colors.background,
+                      borderRadius: theme.borderRadius.full,
+                      borderColor: `${theme.colors.textTertiary}20`,
+                    },
+                  ]}
+                  onPress={() => setSelectedSubjectId(sub.id)}
+                >
+                  <Text style={[styles.subText, { color: active ? '#FFFFFF' : theme.colors.textPrimary }]}>{sub.name}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
-          <Text style={styles.sectionLabel}>Duration</Text>
+          <Text style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}>Duration</Text>
           <View style={styles.durRow}>
             {DURATIONS.map((mins) => {
               const active = duration === mins;
               return (
-                <TouchableOpacity key={mins} style={[styles.durPill, active && styles.durPillActive]} onPress={() => setDuration(mins)}>
-                  <Text style={[styles.durText, active && styles.textWhite]}>{mins} min</Text>
+                <TouchableOpacity
+                  key={mins}
+                  style={[
+                    styles.durPill,
+                    {
+                      backgroundColor: active ? theme.colors.primary : theme.colors.background,
+                      borderColor: active ? theme.colors.primary : `${theme.colors.textTertiary}20`,
+                      borderRadius: theme.borderRadius.md,
+                    },
+                  ]}
+                  onPress={() => setDuration(mins)}
+                >
+                  <Text style={[styles.durText, { color: active ? '#FFFFFF' : theme.colors.textPrimary }]}>{mins} min</Text>
                 </TouchableOpacity>
               );
             })}
@@ -70,21 +93,19 @@ const AddSessionSheet = React.memo(({ visible, onClose, selectedDate = new Date(
 });
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: `${colors.textPrimary}80`, justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: borderRadius.lg, borderTopRightRadius: borderRadius.lg, padding: spacing.lg, paddingBottom: spacing.xl },
-  title: { fontSize: fontSizes.md + 2, fontWeight: '800', color: colors.textPrimary, marginBottom: 4 },
-  dateLabel: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.primary, marginBottom: spacing.md },
-  sectionLabel: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', marginBottom: spacing.xs },
-  subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.md },
-  subPill: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs + 2, borderRadius: borderRadius.full, backgroundColor: colors.background, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  subText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textPrimary },
-  durRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.lg },
-  durPill: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: borderRadius.md, backgroundColor: colors.background, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  durPillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  durText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textPrimary },
-  textWhite: { color: colors.surface },
-  btn: { marginTop: spacing.xs },
-  cancelBtn: { marginTop: spacing.xs },
+  backdrop: { flex: 1, justifyContent: 'flex-end' },
+  sheet: { padding: 24, paddingBottom: 32 },
+  title: { fontSize: 16, fontWeight: '800', marginBottom: 4 },
+  dateLabel: { fontSize: 12, fontWeight: '600', marginBottom: 16 },
+  sectionLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginBottom: 4 },
+  subjectRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 16 },
+  subPill: { paddingHorizontal: 16, paddingVertical: 6, borderWidth: 1 },
+  subText: { fontSize: 10, fontWeight: '700' },
+  durRow: { flexDirection: 'row', gap: 4, marginBottom: 24 },
+  durPill: { flex: 1, alignItems: 'center', paddingVertical: 8, borderWidth: 1 },
+  durText: { fontSize: 10, fontWeight: '700' },
+  btn: { marginTop: 4 },
+  cancelBtn: { marginTop: 4 },
 });
 
 export default AddSessionSheet;

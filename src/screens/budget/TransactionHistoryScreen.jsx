@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, View } from 'react-native';
+import { Alert, FlatList, StyleSheet } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { colors, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useBudgetStore from '../../store/useBudgetStore';
 import useUIStore from '../../store/useUIStore';
@@ -10,12 +10,13 @@ import { deleteIncome, getIncome } from '../../supabase/income';
 import EmptyState from '../../components/common/EmptyState';
 import TransactionFilters from '../../components/budget/TransactionFilters';
 import TransactionRow from '../../components/budget/TransactionRow';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 /**
  * Transaction History Screen displaying filtered, searchable transaction list.
  */
-export default function TransactionHistoryScreen() {
+const TransactionHistoryScreen = React.memo(() => {
   const navigation = useNavigation();
   const user = useAuthStore((s) => s.user);
   const storeExpenses = useBudgetStore((s) => s.expenses);
@@ -34,8 +35,8 @@ export default function TransactionHistoryScreen() {
       const [exp, inc] = await Promise.all([getExpenses(user.id), getIncome(user.id)]);
       setExpenses(exp || []);
       setIncome(inc || []);
-    } catch (e) {
-      console.warn('TransactionHistory fetch error:', e);
+    } catch {
+      // Data fetch fallback
     }
   }, [user?.id, setExpenses, setIncome]);
 
@@ -95,7 +96,7 @@ export default function TransactionHistoryScreen() {
   }, [refreshData, removeExpenseLocal, showToast]);
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader title="Transaction History" showBack onBack={() => navigation.goBack()} />
       <TransactionFilters
         searchQuery={search}
@@ -121,11 +122,12 @@ export default function TransactionHistoryScreen() {
           />
         )}
       />
-    </View>
+    </ScreenWrapper>
   );
-}
+});
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  listContent: { padding: spacing.md, paddingBottom: 100 },
+  listContent: { paddingVertical: 8, paddingBottom: 100 },
 });
+
+export default TransactionHistoryScreen;

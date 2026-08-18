@@ -1,39 +1,48 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Meal tracking and outside food expense summary card.
- *
- * @param {object} props
- * @param {number} props.dormMealCount - Number of dorm meals logged today.
- * @param {number} props.outsideSpent - Total spent on outside food today.
- * @param {() => void} props.onPress - Navigation callback.
  */
 const MealSummaryCard = React.memo(({
   dormMealCount = 0,
   outsideSpent = 0,
   onPress,
 }) => {
+  const { theme } = useTheme();
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.textTertiary}20`,
+          borderWidth: 1,
+        },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <Text style={styles.icon}>🍽️</Text>
-          <Text style={styles.title}>Meals</Text>
+          <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Meals</Text>
         </View>
-        <Text style={styles.chevron}>→</Text>
+        <Text style={[styles.chevron, { color: theme.colors.textTertiary }]}>→</Text>
       </View>
 
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{dormMealCount}</Text>
-          <Text style={styles.statLabel}>dorm meals today</Text>
+          <Text style={[styles.statNumber, { color: theme.colors.textPrimary }]}>{dormMealCount}</Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>dorm meals today</Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: `${theme.colors.textTertiary}30` }]} />
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>৳ {outsideSpent.toLocaleString()}</Text>
-          <Text style={styles.statLabel}>spent on outside food</Text>
+          <Text style={[styles.statNumber, { color: theme.colors.textPrimary }]}>৳ {outsideSpent.toLocaleString()}</Text>
+          <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>spent on outside food</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -42,17 +51,14 @@ const MealSummaryCard = React.memo(({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginVertical: spacing.xs + 2,
-    ...shadows.sm,
+    padding: 16,
+    marginVertical: 6,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   titleRow: {
     flexDirection: 'row',
@@ -60,23 +66,21 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 18,
-    marginRight: spacing.xs,
+    marginRight: 4,
   },
   title: {
-    fontSize: fontSizes.md,
+    fontSize: 14,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   chevron: {
-    fontSize: fontSizes.md,
-    color: colors.textTertiary,
+    fontSize: 14,
     fontWeight: '600',
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    marginTop: spacing.xs,
+    marginTop: 4,
   },
   statBox: {
     flex: 1,
@@ -85,17 +89,14 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 32,
-    backgroundColor: `${colors.textTertiary}40`,
-    marginHorizontal: spacing.sm,
+    marginHorizontal: 8,
   },
   statNumber: {
-    fontSize: fontSizes.lg,
+    fontSize: 16,
     fontWeight: '800',
-    color: colors.textPrimary,
   },
   statLabel: {
-    fontSize: fontSizes.xs,
-    color: colors.textSecondary,
+    fontSize: 10,
     marginTop: 2,
     textAlign: 'center',
   },

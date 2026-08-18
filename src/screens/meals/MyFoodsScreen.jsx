@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useUIStore from '../../store/useUIStore';
 import { deleteCustomFood, getUserCustomFoods, updateCustomFood } from '../../supabase/foods';
@@ -10,9 +10,11 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import EditFoodSheet from '../../components/meals/EditFoodSheet';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 /** Screen displaying and managing user-saved custom food items. */
 const MyFoodsScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const showToast = useUIStore((state) => state.showToast);
 
@@ -73,9 +75,9 @@ const MyFoodsScreen = React.memo(({ navigation }) => {
   const renderItem = useCallback(({ item }) => {
     const hasMacros = item.protein != null || item.carbs != null || item.fat != null;
     return (
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
         <View style={styles.cardTop}>
-          <Text style={styles.foodName} numberOfLines={1}>{item.name}</Text>
+          <Text style={[styles.foodName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{item.name}</Text>
           <View style={styles.actionIcons}>
             <TouchableOpacity onPress={() => setEditingFood(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} style={styles.iconBtn}>
               <Text style={styles.iconText}>✏️</Text>
@@ -85,28 +87,38 @@ const MyFoodsScreen = React.memo(({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-        <Text style={styles.price}>৳ {item.avg_price_bdt || 0}</Text>
+        <Text style={[styles.price, { color: theme.colors.accent }]}>৳ {item.avg_price_bdt || 0}</Text>
         <View style={styles.metaRow}>
-          <Text style={styles.calText}>{item.calories != null ? `${item.calories} kcal` : 'No nutrition data'}</Text>
+          <Text style={[styles.calText, { color: theme.colors.textSecondary }]}>{item.calories != null ? `${item.calories} kcal` : 'No nutrition data'}</Text>
           {hasMacros && (
-            <Text style={styles.macroText}>{item.protein || 0}g P • {item.carbs || 0}g C • {item.fat || 0}g F</Text>
+            <Text style={[styles.macroText, { color: theme.colors.textTertiary }]}>{item.protein || 0}g P • {item.carbs || 0}g C • {item.fat || 0}g F</Text>
           )}
         </View>
       </View>
     );
-  }, []);
+  }, [theme.borderRadius.md, theme.colors.accent, theme.colors.surface, theme.colors.textPrimary, theme.colors.textSecondary, theme.colors.textTertiary]);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <AppHeader title="My Foods" showBack onBack={() => navigation.goBack()} />
       <View style={styles.body}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoText}>Your saved foods appear here and at the top of food search</Text>
+        <View style={[styles.infoCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
+          <Text style={[styles.infoText, { color: theme.colors.textSecondary }]}>Your saved foods appear here and at the top of food search</Text>
         </View>
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}30` }]}>
           <Text style={styles.searchIcon}>🔍</Text>
-          <TextInput style={styles.searchInput} value={searchQuery} onChangeText={setSearchQuery} placeholder="Search my foods..." placeholderTextColor={colors.textTertiary} />
-          {searchQuery ? <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}><Text style={styles.clearBtn}>✕</Text></TouchableOpacity> : null}
+          <TextInput
+            style={[styles.searchInput, { color: theme.colors.textPrimary }]}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search my foods..."
+            placeholderTextColor={theme.colors.textTertiary}
+          />
+          {searchQuery ? (
+            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={[styles.clearBtn, { color: theme.colors.textTertiary }]}>✕</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         {isLoading ? (
@@ -129,32 +141,31 @@ const MyFoodsScreen = React.memo(({ navigation }) => {
 
       <EditFoodSheet visible={Boolean(editingFood)} food={editingFood} onClose={() => setEditingFood(null)} onSave={handleUpdate} isSaving={isSaving} />
       <ConfirmModal visible={Boolean(deletingFood)} title="Remove this food?" message="It will no longer appear in search" confirmLabel="Remove" cancelLabel="Cancel" isDanger onConfirm={handleDelete} onCancel={() => setDeletingFood(null)} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  body: { flex: 1, paddingHorizontal: spacing.md, paddingTop: spacing.sm },
-  infoCard: { backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  infoText: { fontSize: fontSizes.xs + 1, color: colors.textSecondary, lineHeight: 18 },
-  searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, marginBottom: spacing.md },
-  searchIcon: { fontSize: fontSizes.sm, marginRight: spacing.xs },
-  searchInput: { flex: 1, paddingVertical: 10, fontSize: fontSizes.sm, color: colors.textPrimary },
-  clearBtn: { fontSize: fontSizes.xs, color: colors.textTertiary, paddingHorizontal: 4 },
-  skeletonWrap: { gap: spacing.sm },
-  mb: { marginBottom: spacing.sm },
-  listContent: { paddingBottom: spacing.xxl },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.sm, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
+  body: { flex: 1, paddingTop: 4 },
+  infoCard: { padding: 16, marginBottom: 16, borderWidth: 1 },
+  infoText: { fontSize: 11, lineHeight: 18 },
+  searchBox: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, borderWidth: 1, marginBottom: 16 },
+  searchIcon: { fontSize: 12, marginRight: 6 },
+  searchInput: { flex: 1, paddingVertical: 10, fontSize: 12 },
+  clearBtn: { fontSize: 10, paddingHorizontal: 4 },
+  skeletonWrap: { gap: 8 },
+  mb: { marginBottom: 8 },
+  listContent: { paddingBottom: 32 },
+  card: { padding: 16, marginBottom: 8, borderWidth: 1 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  foodName: { fontSize: fontSizes.sm + 1, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: spacing.sm },
-  actionIcons: { flexDirection: 'row', gap: spacing.xs + 4 },
+  foodName: { fontSize: 13, fontWeight: '700', flex: 1, marginRight: 8 },
+  actionIcons: { flexDirection: 'row', gap: 10 },
   iconBtn: { padding: 2 },
-  iconText: { fontSize: fontSizes.sm },
-  price: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.accent, marginBottom: 4 },
+  iconText: { fontSize: 12 },
+  price: { fontSize: 12, fontWeight: '700', marginBottom: 4 },
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 },
-  calText: { fontSize: fontSizes.xs, color: colors.textSecondary },
-  macroText: { fontSize: fontSizes.xs - 1, color: colors.textTertiary, fontWeight: '600' },
+  calText: { fontSize: 10 },
+  macroText: { fontSize: 9, fontWeight: '600' },
 });
 
 export default MyFoodsScreen;

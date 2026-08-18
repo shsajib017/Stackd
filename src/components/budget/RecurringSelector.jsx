@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const INTERVALS = [
   { label: 'Daily', value: 'daily' },
@@ -12,14 +12,26 @@ const INTERVALS = [
  * Reusable Recurring Expense Switch and Interval Selector.
  */
 const RecurringSelector = React.memo(({ isRecurring, onToggle, interval, onIntervalChange }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
-      <View style={styles.switchRow}>
-        <Text style={styles.switchLabel}>Recurring expense</Text>
+      <View
+        style={[
+          styles.switchRow,
+          {
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            borderColor: `${theme.colors.textTertiary}30`,
+          },
+        ]}
+      >
+        <Text style={[styles.switchLabel, { color: theme.colors.textPrimary }]}>Recurring expense</Text>
         <Switch
           value={isRecurring}
           onValueChange={onToggle}
-          trackColor={{ false: colors.textTertiary, true: colors.primary }}
+          trackColor={{ false: `${theme.colors.textTertiary}30`, true: theme.colors.primary }}
+          thumbColor={theme.colors.surface}
         />
       </View>
 
@@ -30,11 +42,20 @@ const RecurringSelector = React.memo(({ isRecurring, onToggle, interval, onInter
             return (
               <TouchableOpacity
                 key={item.value}
-                style={[styles.pill, isSelected && styles.pillActive]}
+                style={[
+                  styles.pill,
+                  {
+                    backgroundColor: isSelected ? theme.colors.primary : theme.colors.surface,
+                    borderColor: isSelected ? theme.colors.primary : `${theme.colors.textTertiary}30`,
+                    borderRadius: theme.borderRadius.md,
+                  },
+                ]}
                 onPress={() => onIntervalChange(item.value)}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.pillText, isSelected && styles.pillTextActive]}>{item.label}</Text>
+                <Text style={[styles.pillText, { color: isSelected ? '#FFFFFF' : theme.colors.textSecondary }, isSelected && styles.pillTextActive]}>
+                  {item.label}
+                </Text>
               </TouchableOpacity>
             );
           })}
@@ -45,14 +66,13 @@ const RecurringSelector = React.memo(({ isRecurring, onToggle, interval, onInter
 });
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.sm },
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}30`, marginBottom: spacing.xs },
-  switchLabel: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
-  intervalRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs, marginBottom: spacing.xs },
-  pill: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, marginHorizontal: 3, borderRadius: borderRadius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: `${colors.textTertiary}40` },
-  pillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  pillText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary },
-  pillTextActive: { color: colors.surface },
+  container: { marginBottom: 8 },
+  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderWidth: 1, marginBottom: 4 },
+  switchLabel: { fontSize: 12, fontWeight: '600' },
+  intervalRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4, marginBottom: 4 },
+  pill: { flex: 1, alignItems: 'center', paddingVertical: 8, marginHorizontal: 3, borderWidth: 1 },
+  pillText: { fontSize: 10, fontWeight: '700' },
+  pillTextActive: { fontWeight: '800' },
 });
 
 export default RecurringSelector;

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { colors, fontSizes } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const SIZE = 210;
 const STROKE_WIDTH = 12;
@@ -12,7 +12,8 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 /**
  * Animated SVG Circular Timer Progress Ring.
  */
-const CircularTimer = React.memo(({ progress = 1, formattedTime = '25:00', ringColor = colors.primary, isBreak = false, celebration = false }) => {
+const CircularTimer = React.memo(({ progress = 1, formattedTime = '25:00', ringColor, isBreak = false, celebration = false }) => {
+  const { theme } = useTheme();
   const pulse = useSharedValue(1);
 
   useEffect(() => {
@@ -27,8 +28,9 @@ const CircularTimer = React.memo(({ progress = 1, formattedTime = '25:00', ringC
     transform: [{ scale: pulse.value }],
   }));
 
+  const effectiveRingColor = ringColor || theme.colors.primary;
   const strokeDashoffset = CIRCUMFERENCE * (1 - Math.max(0, Math.min(1, progress)));
-  const activeColor = celebration ? colors.success : isBreak ? colors.accent : ringColor;
+  const activeColor = celebration ? theme.colors.success : isBreak ? theme.colors.accent : effectiveRingColor;
 
   return (
     <Animated.View style={[styles.container, animatedContainerStyle]}>
@@ -37,7 +39,7 @@ const CircularTimer = React.memo(({ progress = 1, formattedTime = '25:00', ringC
           cx={SIZE / 2}
           cy={SIZE / 2}
           r={RADIUS}
-          stroke={`${colors.textTertiary}25`}
+          stroke={`${theme.colors.textTertiary}25`}
           strokeWidth={STROKE_WIDTH}
           fill="none"
         />
@@ -58,7 +60,7 @@ const CircularTimer = React.memo(({ progress = 1, formattedTime = '25:00', ringC
         <Text style={[styles.phaseLabel, { color: activeColor }]}>
           {celebration ? '🎉 Great work!' : isBreak ? '☕ BREAK' : '🎯 FOCUS'}
         </Text>
-        <Text style={styles.timeText}>{formattedTime}</Text>
+        <Text style={[styles.timeText, { color: theme.colors.textPrimary }]}>{formattedTime}</Text>
       </View>
     </Animated.View>
   );
@@ -68,8 +70,8 @@ const styles = StyleSheet.create({
   container: { width: SIZE, height: SIZE, alignItems: 'center', justifyContent: 'center', marginVertical: 18 },
   svg: { position: 'absolute' },
   content: { alignItems: 'center', justifyContent: 'center' },
-  phaseLabel: { fontSize: fontSizes.xs + 1, fontWeight: '800', letterSpacing: 1.2, marginBottom: 4 },
-  timeText: { fontSize: fontSizes.xxl + 4, fontWeight: '800', color: colors.textPrimary, letterSpacing: 1 },
+  phaseLabel: { fontSize: 11, fontWeight: '800', letterSpacing: 1.2, marginBottom: 4 },
+  timeText: { fontSize: 24, fontWeight: '800', letterSpacing: 1 },
 });
 
 export default CircularTimer;

@@ -1,11 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const STARS = [1, 2, 3, 4, 5];
 
 /** Interactive 1-5 Star focus rating component. */
 const StarRating = React.memo(({ rating = 5, onRatingChange, size = 32, disabled = false }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
       {STARS.map((star) => {
@@ -19,7 +21,7 @@ const StarRating = React.memo(({ rating = 5, onRatingChange, size = 32, disabled
             style={styles.starBtn}
             hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
           >
-            <Text style={[styles.star, { fontSize: size, color: isFilled ? colors.accent : `${colors.textTertiary}60` }]}>
+            <Text style={[styles.star, { fontSize: size, color: isFilled ? theme.colors.accent : `${theme.colors.textTertiary}60` }]}>
               {isFilled ? '★' : '☆'}
             </Text>
           </TouchableOpacity>
@@ -30,7 +32,7 @@ const StarRating = React.memo(({ rating = 5, onRatingChange, size = 32, disabled
 });
 
 const styles = StyleSheet.create({
-  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs + 2, marginVertical: spacing.xs },
+  container: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginVertical: 4 },
   starBtn: { padding: 2 },
   star: { fontWeight: '700' },
 });

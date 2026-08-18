@@ -5,28 +5,20 @@ import BMICalculatorScreen from '../screens/profile/BMICalculatorScreen';
 import GoalsScreen from '../screens/profile/GoalsScreen';
 import AppSettingsScreen from '../screens/profile/AppSettingsScreen';
 import AccountScreen from '../screens/profile/AccountScreen';
-import { colors } from '../config/theme';
 
 const Stack = createNativeStackNavigator();
 
 /**
- * Navigation stack for Profile & Settings module.
+ * Navigation stack for Profile & Settings module with in-screen custom AppHeader.
  */
 const ProfileStack = React.memo(() => {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerStyle: { backgroundColor: colors.surface },
-        headerTintColor: colors.textPrimary,
-        headerTitleAlign: 'center',
-      }}
-    >
-      <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="BMICalculatorScreen" component={BMICalculatorScreen} options={{ title: 'BMI & Calories' }} />
-      <Stack.Screen name="GoalsScreen" component={GoalsScreen} options={{ title: 'Academic Goals' }} />
-      <Stack.Screen name="AppSettingsScreen" component={AppSettingsScreen} options={{ title: 'Settings' }} />
-      <Stack.Screen name="AccountScreen" component={AccountScreen} options={{ title: 'Account' }} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Stack.Screen name="BMICalculatorScreen" component={BMICalculatorScreen} />
+      <Stack.Screen name="GoalsScreen" component={GoalsScreen} />
+      <Stack.Screen name="AppSettingsScreen" component={AppSettingsScreen} />
+      <Stack.Screen name="AccountScreen" component={AccountScreen} />
     </Stack.Navigator>
   );
 });

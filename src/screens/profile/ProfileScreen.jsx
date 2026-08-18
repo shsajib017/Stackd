@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useSavings from '../../hooks/useSavings';
 import useStreak from '../../hooks/useStreak';
@@ -14,6 +14,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import SideDrawer from '../../components/common/SideDrawer';
 import StatCard from '../../components/common/StatCard';
 import BMICard from '../../components/profile/BMICard';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 
 const QUICK_LINKS = [
   { id: 'bmi', icon: '⚖️', label: 'BMI Calculator', route: 'BMICalculatorScreen' },
@@ -25,6 +26,7 @@ const QUICK_LINKS = [
 
 /** Profile and Account Settings Overview Screen. */
 const ProfileScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const { profile, clearAuth } = useAuthStore();
   const { combinedStreak, fetchStreaks } = useStreak();
   const { weeklyStudyMinutes, fetchSessions } = useStudySessions();
@@ -60,7 +62,7 @@ const ProfileScreen = React.memo(({ navigation }) => {
   }, [clearAuth]);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <AppHeader
         title="Profile"
         onMenuPress={() => setDrawerVisible(true)}
@@ -73,83 +75,82 @@ const ProfileScreen = React.memo(({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Hero Section */}
-        <View style={styles.heroCard}>
+        <View style={[styles.heroCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}>
           <View style={styles.avatarWrap}>
             <Avatar name={profile?.name || 'Student'} size={80} />
-            <TouchableOpacity style={styles.editAvatarBadge} onPress={() => navigation.navigate('AccountScreen')} activeOpacity={0.8}>
+            <TouchableOpacity style={[styles.editAvatarBadge, { backgroundColor: theme.colors.surface, borderColor: theme.colors.primary }]} onPress={() => navigation.navigate('AccountScreen')} activeOpacity={0.8}>
               <Text style={styles.editIcon}>✏️</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.userName}>{profile?.name || 'Student'}</Text>
-          <Text style={styles.userSub}>{profile?.university || 'University Student'}</Text>
+          <Text style={[styles.userName, { color: theme.colors.textPrimary }]}>{profile?.name || 'Student'}</Text>
+          <Text style={[styles.userSub, { color: theme.colors.textSecondary }]}>{profile?.university || 'University Student'}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('AccountScreen')} style={styles.editProfileBtn}>
-            <Text style={styles.editProfileText}>Edit Profile →</Text>
+            <Text style={[styles.editProfileText, { color: theme.colors.primary }]}>Edit Profile →</Text>
           </TouchableOpacity>
         </View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          <View style={styles.statWrap}><StatCard icon="🔥" label="Streak" value={`${combinedStreak || 0}d`} color={colors.accent} /></View>
-          <View style={styles.statWrap}><StatCard icon="📚" label="Study" value={studyHours} color={colors.primary} /></View>
-          <View style={styles.statWrap}><StatCard icon="💰" label="Saved" value={formatBDT(totalSaved)} color={colors.success} /></View>
+          <View style={styles.statWrap}><StatCard icon="🔥" label="Streak" value={`${combinedStreak || 0}d`} color={theme.colors.accent} /></View>
+          <View style={styles.statWrap}><StatCard icon="📚" label="Study" value={studyHours} color={theme.colors.primary} /></View>
+          <View style={styles.statWrap}><StatCard icon="💰" label="Saved" value={formatBDT(totalSaved)} color={theme.colors.success} /></View>
         </View>
 
         {/* BMI Card */}
         <BMICard profile={profile} onPress={() => navigation.navigate('BMICalculatorScreen')} />
 
         {/* Quick Links List */}
-        <View style={styles.linksCard}>
+        <View style={[styles.linksCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderColor: `${theme.colors.textTertiary}20` }]}>
           {QUICK_LINKS.map((link, idx) => (
-            <TouchableOpacity key={link.id} style={[styles.linkRow, idx === QUICK_LINKS.length - 1 && styles.noBorder]} onPress={() => navigation.navigate(link.route)} activeOpacity={0.7}>
+            <TouchableOpacity key={link.id} style={[styles.linkRow, { borderBottomColor: `${theme.colors.textTertiary}15` }, idx === QUICK_LINKS.length - 1 && styles.noBorder]} onPress={() => navigation.navigate(link.route)} activeOpacity={0.7}>
               <View style={styles.linkLeft}>
                 <Text style={styles.linkIcon}>{link.icon}</Text>
-                <Text style={styles.linkLabel}>{link.label}</Text>
+                <Text style={[styles.linkLabel, { color: theme.colors.textPrimary }]}>{link.label}</Text>
               </View>
-              <Text style={styles.chevron}>›</Text>
+              <Text style={[styles.chevron, { color: theme.colors.textTertiary }]}>›</Text>
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={[styles.linkRow, styles.noBorder, styles.logoutRow]} onPress={() => setShowLogoutModal(true)} activeOpacity={0.7}>
+          <TouchableOpacity style={[styles.linkRow, styles.noBorder, styles.logoutRow, { borderTopColor: `${theme.colors.textTertiary}15` }]} onPress={() => setShowLogoutModal(true)} activeOpacity={0.7}>
             <View style={styles.linkLeft}>
               <Text style={styles.linkIcon}>🚪</Text>
-              <Text style={styles.logoutLabel}>Log out</Text>
+              <Text style={[styles.logoutLabel, { color: theme.colors.error }]}>Log out</Text>
             </View>
           </TouchableOpacity>
         </View>
 
         {/* App Version */}
-        <Text style={styles.versionText}>Stackd v1.0.0</Text>
+        <Text style={[styles.versionText, { color: theme.colors.textTertiary }]}>Stackd v1.0.0</Text>
       </ScrollView>
 
       <ConfirmModal visible={showLogoutModal} title="Log out of Stackd?" message="Your data will remain saved" confirmLabel="Log out" isDanger onConfirm={handleLogout} onCancel={() => setShowLogoutModal(false)} />
       <SideDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)} navigation={navigation} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  settingsIcon: { fontSize: fontSizes.lg, color: colors.textPrimary },
-  content: { padding: spacing.md, paddingBottom: spacing.xxl },
-  heroCard: { backgroundColor: colors.surface, borderRadius: borderRadius.xl, padding: spacing.lg, alignItems: 'center', marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.primary}20`, ...shadows.sm },
-  avatarWrap: { position: 'relative', marginBottom: spacing.sm },
-  editAvatarBadge: { position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.surface, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: colors.primary, ...shadows.sm },
+  settingsIcon: { fontSize: 18 },
+  content: { paddingVertical: 8, paddingBottom: 40 },
+  heroCard: { padding: 20, alignItems: 'center', marginBottom: 16, borderWidth: 1 },
+  avatarWrap: { position: 'relative', marginBottom: 8 },
+  editAvatarBadge: { position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5 },
   editIcon: { fontSize: 12 },
-  userName: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary, marginBottom: 2 },
-  userSub: { fontSize: fontSizes.xs, color: colors.textSecondary, marginBottom: spacing.xs + 2 },
-  editProfileBtn: { paddingVertical: 4, paddingHorizontal: spacing.sm },
-  editProfileText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
-  statsRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
+  userName: { fontSize: 18, fontWeight: '800', marginBottom: 2 },
+  userSub: { fontSize: 11, marginBottom: 6 },
+  editProfileBtn: { paddingVertical: 4, paddingHorizontal: 8 },
+  editProfileText: { fontSize: 11, fontWeight: '700' },
+  statsRow: { flexDirection: 'row', gap: 6, marginBottom: 16 },
   statWrap: { flex: 1 },
-  linksCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, paddingHorizontal: spacing.md, marginTop: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  linkRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm + 4, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}15` },
+  linksCard: { paddingHorizontal: 16, marginTop: 16, borderWidth: 1 },
+  linkRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1 },
   noBorder: { borderBottomWidth: 0 },
   linkLeft: { flexDirection: 'row', alignItems: 'center' },
-  linkIcon: { fontSize: fontSizes.md, marginRight: spacing.sm },
-  linkLabel: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
-  chevron: { fontSize: fontSizes.lg, color: colors.textTertiary, fontWeight: '700' },
-  logoutRow: { borderTopWidth: 1, borderTopColor: `${colors.textTertiary}15`, marginTop: spacing.xs },
-  logoutLabel: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.error },
-  versionText: { textAlign: 'center', fontSize: fontSizes.xs, color: colors.textTertiary, fontWeight: '600', marginTop: spacing.xl, marginBottom: spacing.md },
+  linkIcon: { fontSize: 16, marginRight: 8 },
+  linkLabel: { fontSize: 13, fontWeight: '600' },
+  chevron: { fontSize: 18, fontWeight: '700' },
+  logoutRow: { borderTopWidth: 1, marginTop: 4 },
+  logoutLabel: { fontSize: 13, fontWeight: '700' },
+  versionText: { textAlign: 'center', fontSize: 11, fontWeight: '600', marginTop: 24, marginBottom: 16 },
 });
 
 export default ProfileScreen;

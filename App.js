@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './src/navigation';
+import { ThemeProvider } from './src/config/ThemeContext';
 import { colors } from './src/config/theme';
 
 /**
@@ -14,9 +15,11 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
+        <ThemeProvider>
+          <NavigationContainer>
+            <RootNavigator />
+          </NavigationContainer>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

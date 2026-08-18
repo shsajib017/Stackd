@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import ExamCountdown from './ExamCountdown';
 import ProgressRing from './ProgressRing';
 
@@ -8,11 +8,12 @@ import ProgressRing from './ProgressRing';
  * Subject Overview Card for horizontal scroll carousel.
  */
 const SubjectCard = React.memo(({ subject, progress = 0, onPress }) => {
-  const cardColor = subject.color || colors.primary;
+  const { theme } = useTheme();
+  const cardColor = subject.color || theme.colors.primary;
 
   return (
     <TouchableOpacity
-      style={[styles.card, { backgroundColor: cardColor }]}
+      style={[styles.card, { backgroundColor: cardColor, borderRadius: theme.borderRadius.lg }]}
       onPress={() => onPress?.(subject)}
       activeOpacity={0.85}
     >
@@ -20,7 +21,7 @@ const SubjectCard = React.memo(({ subject, progress = 0, onPress }) => {
         <Text style={styles.name} numberOfLines={1}>
           {subject.name}
         </Text>
-        <ProgressRing progress={progress} size={38} color={colors.surface} />
+        <ProgressRing progress={progress} size={38} color="#FFFFFF" />
       </View>
 
       <View style={styles.footerRow}>
@@ -37,11 +38,9 @@ const styles = StyleSheet.create({
   card: {
     width: 200,
     height: 110,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginRight: spacing.sm,
+    padding: 16,
+    marginRight: 8,
     justifyContent: 'space-between',
-    ...shadows.md,
   },
   topRow: {
     flexDirection: 'row',
@@ -49,11 +48,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   name: {
-    fontSize: fontSizes.md,
+    fontSize: 14,
     fontWeight: '800',
-    color: colors.surface,
+    color: '#FFFFFF',
     flex: 1,
-    marginRight: spacing.xs,
+    marginRight: 4,
   },
   footerRow: {
     flexDirection: 'row',
@@ -61,7 +60,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   targetText: {
-    fontSize: fontSizes.xs - 1,
+    fontSize: 9,
     fontWeight: '700',
     color: 'rgba(255, 255, 255, 0.9)',
   },

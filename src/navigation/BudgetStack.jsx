@@ -11,12 +11,11 @@ import CreateGoalScreen from '../screens/budget/CreateGoalScreen';
 import EditGoalScreen from '../screens/budget/EditGoalScreen';
 import BudgetSettingsScreen from '../screens/budget/BudgetSettingsScreen';
 import SpendingReportScreen from '../screens/budget/SpendingReportScreen';
-import { colors } from '../config/theme';
 
 const Stack = createNativeStackNavigator();
 
 /**
- * Navigation stack for Budget tab.
+ * Navigation stack for Budget tab with in-screen custom AppHeader.
  */
 const BudgetStack = React.memo(() => {
   return (

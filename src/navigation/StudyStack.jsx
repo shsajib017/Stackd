@@ -9,12 +9,11 @@ import AutoScheduleScreen from '../screens/study/AutoScheduleScreen';
 import NotesEditorScreen from '../screens/study/NotesEditorScreen';
 import SyllabusUploadScreen from '../screens/study/SyllabusUploadScreen';
 import PYQUploadScreen from '../screens/study/PYQUploadScreen';
-import { colors } from '../config/theme';
 
 const Stack = createNativeStackNavigator();
 
 /**
- * Navigation stack for Study module.
+ * Navigation stack for Study module with in-screen custom AppHeader.
  */
 const StudyStack = React.memo(() => {
   return (

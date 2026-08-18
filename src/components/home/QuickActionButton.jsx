@@ -1,22 +1,31 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Quick action button with emoji icon, rounded background, and caption.
- *
- * @param {object} props
- * @param {string} props.icon - Action emoji icon.
- * @param {string} props.label - Button caption text.
- * @param {() => void} props.onPress - Press handler.
  */
 const QuickActionButton = React.memo(({ icon, label, onPress }) => {
+  const { theme } = useTheme();
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.75}>
-      <View style={styles.iconBox}>
+    <TouchableOpacity
+      style={[
+        styles.container,
+        {
+          backgroundColor: `${theme.colors.primary}12`,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.primary}20`,
+          borderWidth: 1,
+        },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.75}
+    >
+      <View style={[styles.iconBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md }]}>
         <Text style={styles.icon}>{icon}</Text>
       </View>
-      <Text style={styles.label} numberOfLines={1}>
+      <Text style={[styles.label, { color: theme.colors.primary }]} numberOfLines={1}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -28,28 +37,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: `${colors.primary}12`,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
+    paddingVertical: 16,
+    paddingHorizontal: 4,
     marginHorizontal: 4,
   },
   iconBox: {
     width: 40,
     height: 40,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   icon: {
     fontSize: 20,
   },
   label: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '700',
-    color: colors.primary,
     textAlign: 'center',
   },
 });

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useStudySessions from '../../hooks/useStudySessions';
 import useStudyStore from '../../store/useStudyStore';
 import { formatDateForDB, formatDateShort } from '../../utils/formatDate';
@@ -12,6 +12,7 @@ import AddSessionSheet from '../../components/study/AddSessionSheet';
 import DayTabsRow from '../../components/study/DayTabsRow';
 import SessionItem from '../../components/study/SessionItem';
 import WeekSummaryBar from '../../components/study/WeekSummaryBar';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 const getWeekDays = (baseDate = new Date()) => {
@@ -32,6 +33,7 @@ const getWeekDays = (baseDate = new Date()) => {
 
 /** Weekly Timetable & Study Schedule Screen. */
 const ScheduleScreen = React.memo(({ navigation }) => {
+  const { theme } = useTheme();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekOffset, setWeekOffset] = useState(0);
   const [showAddSheet, setShowAddSheet] = useState(false);
@@ -88,39 +90,47 @@ const ScheduleScreen = React.memo(({ navigation }) => {
   const renderHeader = useCallback(() => (
     <View>
       <View style={styles.weekNavRow}>
-        <TouchableOpacity onPress={() => setWeekOffset((p) => p - 1)} style={styles.weekArrowBtn}><Text style={styles.weekArrow}>‹</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setWeekOffset((p) => p - 1)} style={styles.weekArrowBtn}>
+          <Text style={[styles.weekArrow, { color: theme.colors.primary }]}>‹</Text>
+        </TouchableOpacity>
         <View style={styles.weekCenter}>
-          <Text style={styles.weekRangeText}>{weekRangeLabel}</Text>
+          <Text style={[styles.weekRangeText, { color: theme.colors.textPrimary }]}>{weekRangeLabel}</Text>
           {weekOffset !== 0 ? (
-            <TouchableOpacity onPress={() => { setWeekOffset(0); setSelectedDate(new Date()); }} style={styles.thisWeekPill}>
-              <Text style={styles.thisWeekText}>This week</Text>
+            <TouchableOpacity onPress={() => { setWeekOffset(0); setSelectedDate(new Date()); }} style={[styles.thisWeekPill, { backgroundColor: `${theme.colors.primary}15` }]}>
+              <Text style={[styles.thisWeekText, { color: theme.colors.primary }]}>This week</Text>
             </TouchableOpacity>
           ) : null}
         </View>
-        <TouchableOpacity onPress={() => setWeekOffset((p) => p + 1)} style={styles.weekArrowBtn}><Text style={styles.weekArrow}>›</Text></TouchableOpacity>
+        <TouchableOpacity onPress={() => setWeekOffset((p) => p + 1)} style={styles.weekArrowBtn}>
+          <Text style={[styles.weekArrow, { color: theme.colors.primary }]}>›</Text>
+        </TouchableOpacity>
       </View>
       <DayTabsRow days={weekDays} selectedDate={selectedDate} onSelectDay={setSelectedDate} sessionsByDate={sessionsCountMap} />
       <View style={styles.daySummaryHeader}>
         <View>
-          <Text style={styles.daySummaryTitle}>{formatDateShort(selectedDate)} Sessions</Text>
-          <Text style={styles.daySummaryTime}>{selectedDayTimeLabel}</Text>
+          <Text style={[styles.daySummaryTitle, { color: theme.colors.textPrimary }]}>{formatDateShort(selectedDate)} Sessions</Text>
+          <Text style={[styles.daySummaryTime, { color: theme.colors.accent }]}>{selectedDayTimeLabel}</Text>
         </View>
-        <TouchableOpacity style={styles.addDayBtn} onPress={() => setShowAddSheet(true)} activeOpacity={0.8}>
-          <Text style={styles.addDayBtnText}>+ Add session</Text>
+        <TouchableOpacity style={[styles.addDayBtn, { backgroundColor: `${theme.colors.primary}15` }]} onPress={() => setShowAddSheet(true)} activeOpacity={0.8}>
+          <Text style={[styles.addDayBtnText, { color: theme.colors.primary }]}>+ Add session</Text>
         </TouchableOpacity>
       </View>
     </View>
-  ), [selectedDate, selectedDayTimeLabel, sessionsCountMap, weekDays, weekOffset, weekRangeLabel]);
+  ), [selectedDate, selectedDayTimeLabel, sessionsCountMap, theme.colors.accent, theme.colors.primary, theme.colors.textPrimary, weekDays, weekOffset, weekRangeLabel]);
 
   const renderFooter = useCallback(() => (
     <View style={styles.footerSummary}>
-      <Text style={styles.footerTitle}>Weekly Overview</Text>
+      <Text style={[styles.footerTitle, { color: theme.colors.textSecondary }]}>Weekly Overview</Text>
       <WeekSummaryBar totalSessions={weekStats.total} completed={weekStats.completed} totalMinutes={weekStats.totalMinutes} />
-      <TouchableOpacity style={styles.autoGenBanner} onPress={() => navigation.navigate('AutoScheduleScreen')} activeOpacity={0.8}>
-        <Text style={styles.autoGenText}>✨ Need an optimal study plan? Auto-generate schedule →</Text>
+      <TouchableOpacity
+        style={[styles.autoGenBanner, { backgroundColor: `${theme.colors.primary}10`, borderColor: `${theme.colors.primary}30`, borderRadius: theme.borderRadius.md }]}
+        onPress={() => navigation.navigate('AutoScheduleScreen')}
+        activeOpacity={0.8}
+      >
+        <Text style={[styles.autoGenText, { color: theme.colors.primary }]}>✨ Need an optimal study plan? Auto-generate schedule →</Text>
       </TouchableOpacity>
     </View>
-  ), [navigation, weekStats]);
+  ), [navigation, theme.borderRadius.md, theme.colors.primary, theme.colors.textSecondary, weekStats]);
 
   const renderEmptyOrLoading = useCallback(() => {
     if (isLoading) {
@@ -134,14 +144,14 @@ const ScheduleScreen = React.memo(({ navigation }) => {
   }, [isLoading]);
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader
         title="Schedule"
         showBack
         onBack={() => navigation.goBack()}
         rightElement={
-          <TouchableOpacity onPress={() => navigation.navigate('AutoScheduleScreen')} style={styles.genBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} activeOpacity={0.7}>
-            <Text style={styles.genBtnText}>⚡ Generate</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('AutoScheduleScreen')} style={[styles.genBtn, { backgroundColor: `${theme.colors.accent}20` }]} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} activeOpacity={0.7}>
+            <Text style={[styles.genBtnText, { color: theme.colors.accent }]}>⚡ Generate</Text>
           </TouchableOpacity>
         }
       />
@@ -158,35 +168,32 @@ const ScheduleScreen = React.memo(({ navigation }) => {
         showsVerticalScrollIndicator={false}
       />
       <AddSessionSheet visible={showAddSheet} onClose={() => setShowAddSheet(false)} selectedDate={selectedDate} subjects={subjects} onAddSession={handleAddSession} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  headerBtn: { paddingHorizontal: spacing.sm },
-  headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  genBtn: { backgroundColor: `${colors.accent}20`, paddingHorizontal: spacing.sm + 4, paddingVertical: 6, borderRadius: borderRadius.full, marginRight: spacing.xs },
-  genBtnText: { fontSize: fontSizes.xs, fontWeight: '800', color: colors.accent },
-  weekNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  weekArrowBtn: { padding: spacing.xs },
-  weekArrow: { fontSize: fontSizes.xxl, fontWeight: '800', color: colors.primary },
+  genBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, marginRight: 4 },
+  genBtnText: { fontSize: 10, fontWeight: '800' },
+  weekNavRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 },
+  weekArrowBtn: { padding: 4 },
+  weekArrow: { fontSize: 24, fontWeight: '800' },
   weekCenter: { alignItems: 'center' },
-  weekRangeText: { fontSize: fontSizes.sm + 1, fontWeight: '800', color: colors.textPrimary },
-  thisWeekPill: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.xs + 4, paddingVertical: 2, borderRadius: borderRadius.sm, marginTop: 2 },
-  thisWeekText: { fontSize: fontSizes.xs - 2, fontWeight: '700', color: colors.primary },
-  daySummaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.md, marginBottom: spacing.xs },
-  daySummaryTitle: { fontSize: fontSizes.sm, fontWeight: '800', color: colors.textPrimary },
-  daySummaryTime: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.accent },
-  addDayBtn: { backgroundColor: `${colors.primary}15`, paddingHorizontal: spacing.sm + 2, paddingVertical: 5, borderRadius: borderRadius.full },
-  addDayBtnText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
+  weekRangeText: { fontSize: 13, fontWeight: '800' },
+  thisWeekPill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, marginTop: 2 },
+  thisWeekText: { fontSize: 8, fontWeight: '700' },
+  daySummaryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  daySummaryTitle: { fontSize: 12, fontWeight: '800' },
+  daySummaryTime: { fontSize: 10, fontWeight: '700' },
+  addDayBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
+  addDayBtnText: { fontSize: 10, fontWeight: '700' },
   listContent: { paddingBottom: 60 },
-  loadingBox: { paddingHorizontal: spacing.md, marginVertical: spacing.sm },
-  mb: { marginBottom: spacing.sm },
-  footerSummary: { marginTop: spacing.md, paddingHorizontal: spacing.md },
-  footerTitle: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase' },
-  autoGenBanner: { marginTop: spacing.sm, padding: spacing.sm + 2, backgroundColor: `${colors.primary}10`, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.primary}30`, alignItems: 'center' },
-  autoGenText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
+  loadingBox: { marginVertical: 8 },
+  mb: { marginBottom: 8 },
+  footerSummary: { marginTop: 16 },
+  footerTitle: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  autoGenBanner: { marginTop: 8, padding: 10, borderWidth: 1, alignItems: 'center' },
+  autoGenText: { fontSize: 10, fontWeight: '700' },
 });
 
 export default ScheduleScreen;

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { useFocusEffect } from '@react-navigation/native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { analyseSyllabus as geminiAnalyseSyllabus } from '../../api/gemini';
 import useAuthStore from '../../store/useAuthStore';
 import useMaterials from '../../hooks/useMaterials';
@@ -13,12 +13,14 @@ import { addBatchTopics } from '../../supabase/topics';
 
 import Button from '../../components/common/Button';
 import TopicResultsList from '../../components/study/TopicResultsList';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 const LOADING_MESSAGES = ['Reading your syllabus...', 'Identifying topics...', 'Estimating study time...'];
 
 /** AI-Driven Syllabus Document & Text Parser Screen. */
 const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
+  const { theme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const subjects = useStudyStore((state) => state.subjects);
   const showToast = useUIStore((state) => state.showToast);
@@ -39,8 +41,6 @@ const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
   const [topics, setTopics] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-
-
 
   useEffect(() => {
     if (!isAnalysing) return;
@@ -91,97 +91,123 @@ const SyllabusUploadScreen = React.memo(({ navigation, route }) => {
   const canAnalyse = activeTab === 'Upload PDF' ? Boolean(selectedFile) : pastedText.trim().length >= 100;
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader title="Analyse Syllabus" showBack onBack={() => navigation.goBack()} />
       <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.subjectBadge}>
-        <View style={[styles.subDot, { backgroundColor: activeSubject.color || colors.primary }]} />
-        <Text style={styles.subName} numberOfLines={1}>{activeSubject.name || 'Subject'}</Text>
-      </View>
+        <View style={[styles.subjectBadge, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.full, borderColor: `${theme.colors.textTertiary}20` }]}>
+          <View style={[styles.subDot, { backgroundColor: activeSubject.color || theme.colors.primary }]} />
+          <Text style={[styles.subName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{activeSubject.name || 'Subject'}</Text>
+        </View>
 
-      {!topics ? (
-        <View>
-          <View style={styles.modeTabs}>
-            {['Upload PDF', 'Paste text'].map((tab) => (
-              <TouchableOpacity key={tab} style={[styles.modeTab, activeTab === tab && styles.modeTabActive]} onPress={() => setActiveTab(tab)}>
-                <Text style={[styles.modeTabText, activeTab === tab && styles.modeTabTextActive]}>{tab}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {!topics ? (
+          <View>
+            <View style={[styles.modeTabs, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
+              {['Upload PDF', 'Paste text'].map((tab) => {
+                const isActive = activeTab === tab;
+                return (
+                  <TouchableOpacity
+                    key={tab}
+                    style={[
+                      styles.modeTab,
+                      { borderRadius: theme.borderRadius.sm },
+                      isActive && { backgroundColor: theme.colors.primary },
+                    ]}
+                    onPress={() => setActiveTab(tab)}
+                  >
+                    <Text style={[styles.modeTabText, { color: isActive ? theme.colors.surface : theme.colors.textSecondary }]}>{tab}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-          {activeTab === 'Upload PDF' ? (
-            selectedFile ? (
-              <View style={styles.fileCard}>
-                <Text style={styles.fileIcon}>📄</Text>
-                <View style={styles.fileInfo}><Text style={styles.fileName} numberOfLines={1}>{selectedFile.name || selectedFile.title || 'Syllabus.pdf'}</Text><Text style={styles.fileSize}>{selectedFile.size ? `${Math.round(selectedFile.size / 1024)} KB` : 'Ready'}</Text></View>
-                <TouchableOpacity onPress={() => setSelectedFile(null)} style={styles.removeBtn}><Text style={styles.removeText}>✕</Text></TouchableOpacity>
+            {activeTab === 'Upload PDF' ? (
+              selectedFile ? (
+                <View style={[styles.fileCard, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
+                  <Text style={styles.fileIcon}>📄</Text>
+                  <View style={styles.fileInfo}>
+                    <Text style={[styles.fileName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{selectedFile.name || selectedFile.title || 'Syllabus.pdf'}</Text>
+                    <Text style={[styles.fileSize, { color: theme.colors.textTertiary }]}>{selectedFile.size ? `${Math.round(selectedFile.size / 1024)} KB` : 'Ready'}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setSelectedFile(null)} style={styles.removeBtn}>
+                    <Text style={[styles.removeText, { color: theme.colors.error }]}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.dropZone, { backgroundColor: theme.colors.surface, borderColor: `${theme.colors.primary}40`, borderRadius: theme.borderRadius.lg }]}
+                  onPress={handlePickDocument}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.dropIcon}>📄</Text>
+                  <Text style={[styles.dropTitle, { color: theme.colors.textPrimary }]}>Tap to upload syllabus PDF</Text>
+                  <Text style={[styles.dropSub, { color: theme.colors.textTertiary }]}>Supports PDF documents</Text>
+                </TouchableOpacity>
+              )
+            ) : (
+              <View>
+                <TextInput
+                  style={[styles.pasteInput, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20`, color: theme.colors.textPrimary }]}
+                  value={pastedText}
+                  onChangeText={setPastedText}
+                  placeholder="Paste your syllabus content here (course overview, module units, topics)..."
+                  placeholderTextColor={theme.colors.textTertiary}
+                  multiline
+                  textAlignVertical="top"
+                />
+                <Text style={[styles.charCount, { color: theme.colors.textTertiary }]}>{pastedText.length}/100 minimum characters</Text>
+              </View>
+            )}
+
+            {errorMessage ? <Text style={[styles.errorBanner, { color: theme.colors.error }]}>{errorMessage}</Text> : null}
+
+            {isAnalysing ? (
+              <View style={[styles.loadingBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md }]}>
+                <ActivityIndicator color={theme.colors.primary} size="small" />
+                <Text style={[styles.loadingText, { color: theme.colors.primary }]}>{LOADING_MESSAGES[loadingMsgIdx]}</Text>
               </View>
             ) : (
-              <TouchableOpacity style={styles.dropZone} onPress={handlePickDocument} activeOpacity={0.75}>
-                <Text style={styles.dropIcon}>📄</Text>
-                <Text style={styles.dropTitle}>Tap to upload syllabus PDF</Text>
-                <Text style={styles.dropSub}>Supports PDF documents</Text>
-              </TouchableOpacity>
-            )
-          ) : (
-            <View>
-              <TextInput style={styles.pasteInput} value={pastedText} onChangeText={setPastedText} placeholder="Paste your syllabus content here (course overview, module units, topics)..." placeholderTextColor={colors.textTertiary} multiline textAlignVertical="top" />
-              <Text style={styles.charCount}>{pastedText.length}/100 minimum characters</Text>
-            </View>
-          )}
-
-          {errorMessage ? <Text style={styles.errorBanner}>{errorMessage}</Text> : null}
-
-          {isAnalysing ? (
-            <View style={styles.loadingBox}><ActivityIndicator color={colors.primary} size="small" /><Text style={styles.loadingText}>{LOADING_MESSAGES[loadingMsgIdx]}</Text></View>
-          ) : (
-            <Button label="Analyse syllabus" onPress={handleAnalyse} disabled={!canAnalyse} fullWidth style={styles.actionBtn} />
-          )}
-        </View>
-      ) : (
-        <View>
-          <TopicResultsList topics={topics} onUpdateTitle={(idx, txt) => setTopics((prev) => prev.map((t, i) => i === idx ? { ...t, title: txt } : t))} onDeleteTopic={(idx) => setTopics((prev) => prev.filter((_, i) => i !== idx))} onAddTopic={() => setTopics((prev) => [...prev, { title: 'New Unit Topic', estimated_hours: 2, complexity: 3 }])} />
-          <Button label="Save topics" onPress={handleSaveTopics} loading={isSaving} fullWidth style={styles.actionBtn} />
-          <Button label="Discard" variant="secondary" onPress={() => setTopics(null)} fullWidth style={styles.discardBtn} />
-        </View>
-      )}
+              <Button label="Analyse syllabus" onPress={handleAnalyse} disabled={!canAnalyse} fullWidth style={styles.actionBtn} />
+            )}
+          </View>
+        ) : (
+          <View>
+            <TopicResultsList topics={topics} onUpdateTitle={(idx, txt) => setTopics((prev) => prev.map((t, i) => i === idx ? { ...t, title: txt } : t))} onDeleteTopic={(idx) => setTopics((prev) => prev.filter((_, i) => i !== idx))} onAddTopic={() => setTopics((prev) => [...prev, { title: 'New Unit Topic', estimated_hours: 2, complexity: 3 }])} />
+            <Button label="Save topics" onPress={handleSaveTopics} loading={isSaving} fullWidth style={styles.actionBtn} />
+            <Button label="Discard" variant="secondary" onPress={() => setTopics(null)} fullWidth style={styles.discardBtn} />
+          </View>
+        )}
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
   scrollContainer: { flex: 1 },
-  headerBtn: { paddingHorizontal: spacing.sm },
-  headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  content: { padding: spacing.md, paddingBottom: 80 },
-  subjectBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', backgroundColor: colors.surface, paddingHorizontal: spacing.sm + 2, paddingVertical: 6, borderRadius: borderRadius.full, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  subDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs + 2 },
-  subName: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textPrimary },
-  modeTabs: { flexDirection: 'row', backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: 3, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  modeTab: { flex: 1, paddingVertical: spacing.xs + 2, alignItems: 'center', borderRadius: borderRadius.sm },
-  modeTabActive: { backgroundColor: colors.primary },
-  modeTabText: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textSecondary },
-  modeTabTextActive: { color: colors.surface },
-  dropZone: { backgroundColor: colors.surface, borderWidth: 2, borderColor: `${colors.primary}40`, borderStyle: 'dashed', borderRadius: borderRadius.lg, padding: spacing.xl, alignItems: 'center', marginBottom: spacing.md },
-  dropIcon: { fontSize: 36, marginBottom: spacing.xs },
-  dropTitle: { fontSize: fontSizes.sm + 1, fontWeight: '800', color: colors.textPrimary, marginBottom: 2 },
-  dropSub: { fontSize: fontSizes.xs, color: colors.textTertiary },
-  fileCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20`, marginBottom: spacing.md },
-  fileIcon: { fontSize: 24, marginRight: spacing.sm },
+  content: { paddingVertical: 8, paddingBottom: 80 },
+  subjectBadge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, marginBottom: 16, borderWidth: 1 },
+  subDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
+  subName: { fontSize: 11, fontWeight: '700' },
+  modeTabs: { flexDirection: 'row', padding: 3, marginBottom: 16, borderWidth: 1 },
+  modeTab: { flex: 1, paddingVertical: 6, alignItems: 'center' },
+  modeTabText: { fontSize: 11, fontWeight: '700' },
+  dropZone: { borderWidth: 2, borderStyle: 'dashed', padding: 24, alignItems: 'center', marginBottom: 16 },
+  dropIcon: { fontSize: 36, marginBottom: 4 },
+  dropTitle: { fontSize: 13, fontWeight: '800', marginBottom: 2 },
+  dropSub: { fontSize: 10 },
+  fileCard: { flexDirection: 'row', alignItems: 'center', padding: 16, borderWidth: 1, marginBottom: 16 },
+  fileIcon: { fontSize: 24, marginRight: 8 },
   fileInfo: { flex: 1 },
-  fileName: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary },
-  fileSize: { fontSize: fontSizes.xs - 1, color: colors.textTertiary, marginTop: 2 },
+  fileName: { fontSize: 12, fontWeight: '700' },
+  fileSize: { fontSize: 9, marginTop: 2 },
   removeBtn: { padding: 4 },
-  removeText: { fontSize: fontSizes.sm, fontWeight: '800', color: colors.error },
-  pasteInput: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, minHeight: 140, fontSize: fontSizes.sm, color: colors.textPrimary, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  charCount: { fontSize: fontSizes.xs - 1, color: colors.textTertiary, textAlign: 'right', marginTop: 4, marginBottom: spacing.md },
-  errorBanner: { fontSize: fontSizes.xs, color: colors.error, fontWeight: '600', textAlign: 'center', marginBottom: spacing.sm },
-  loadingBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surface, borderRadius: borderRadius.md, marginTop: spacing.xs },
-  loadingText: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.primary },
-  actionBtn: { marginTop: spacing.xs },
-  discardBtn: { marginTop: spacing.xs },
+  removeText: { fontSize: 12, fontWeight: '800' },
+  pasteInput: { padding: 16, minHeight: 140, fontSize: 12, borderWidth: 1 },
+  charCount: { fontSize: 9, textAlign: 'right', marginTop: 4, marginBottom: 16 },
+  errorBanner: { fontSize: 10, fontWeight: '600', textAlign: 'center', marginBottom: 8 },
+  loadingBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 16, marginTop: 4 },
+  loadingText: { fontSize: 12, fontWeight: '700' },
+  actionBtn: { marginTop: 4 },
+  discardBtn: { marginTop: 4 },
 });
 
 export default SyllabusUploadScreen;

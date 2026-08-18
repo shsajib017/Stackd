@@ -1,8 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useMeals from '../../hooks/useMeals';
 import useUIStore from '../../store/useUIStore';
 
@@ -12,12 +11,14 @@ import SideDrawer from '../../components/common/SideDrawer';
 import SkeletonCard from '../../components/common/SkeletonCard';
 import DailyMealSummary from '../../components/meals/DailyMealSummary';
 import MealSlot from '../../components/meals/MealSlot';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
+import AppHeader from '../../components/common/AppHeader';
 
 const getISODate = (d) => d.toISOString().split('T')[0];
 
 /** Main Meals Tracking, Meal Slots, and Daily Nutrition Screen. */
 const MealsScreen = React.memo(({ navigation }) => {
-  const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(getISODate(new Date()));
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -75,33 +76,77 @@ const MealsScreen = React.memo(({ navigation }) => {
   const dateLabel = isToday ? 'Today' : selectedDate.slice(5);
 
   return (
-    <View style={[styles.screen, { paddingTop: Math.max(insets.top, 24) }]}>
-      {/* In-Screen Top Header Bar */}
-      <View style={styles.topBar}>
-        <Pressable onPress={() => setDrawerVisible(true)} style={({ pressed }) => [styles.menuBtn, { opacity: pressed ? 0.5 : 1 }]} hitSlop={{ top: 15, bottom: 15, left: 15, right: 25 }}>
-          <Text pointerEvents="none" style={styles.menuIcon}>☰</Text>
-        </Pressable>
-        <Text style={styles.headerTitle}>Meals</Text>
-        <View style={styles.headerDateRow}>
-          <TouchableOpacity onPress={() => changeDateBy(-1)} style={styles.dateNavBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={styles.navArrow}>‹</Text>
+    <ScreenWrapper>
+      <AppHeader
+        title="Meals"
+        onMenuPress={() => setDrawerVisible(true)}
+        rightElement={
+          <TouchableOpacity
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('MainTabs', { screen: 'HomeStack' });
+              }
+            }}
+            style={[
+              styles.headerBackBtn,
+              {
+                backgroundColor: `${theme.colors.primary}15`,
+                borderRadius: theme.borderRadius.sm,
+                borderColor: `${theme.colors.primary}30`,
+              },
+            ]}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.headerBackText, { color: theme.colors.primary }]}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.headerDateText}>{dateLabel}</Text>
-          <TouchableOpacity onPress={() => changeDateBy(1)} disabled={isToday} style={[styles.dateNavBtn, isToday && styles.disabledNav]} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={[styles.navArrow, isToday && styles.disabledArrow]}>›</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Date Controls & Navigation */}
+        <View style={styles.dateControlRow}>
+          <View style={styles.dateTitleWrap}>
+            <Text style={[styles.dateSectionLabel, { color: theme.colors.textSecondary }]}>Select Day</Text>
+          </View>
+          <View
+            style={[
+              styles.dateNavPill,
+              {
+                backgroundColor: theme.colors.surface,
+                borderRadius: theme.borderRadius.md,
+                borderColor: `${theme.colors.textTertiary}20`,
+              },
+            ]}
+          >
+            <TouchableOpacity onPress={() => changeDateBy(-1)} style={styles.dateNavBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={[styles.navArrow, { color: theme.colors.primary }]}>‹</Text>
+            </TouchableOpacity>
+            <Text style={[styles.dateNavText, { color: theme.colors.textPrimary }]}>{dateLabel}</Text>
+            <TouchableOpacity onPress={() => changeDateBy(1)} disabled={isToday} style={[styles.dateNavBtn, isToday && styles.disabledNav]} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Text style={[styles.navArrow, { color: theme.colors.primary }, isToday && { color: theme.colors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Horizontal 7-Day Date Carousel */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateScroll}>
           {weekDays.map((item) => {
             const isSelected = item.iso === selectedDate;
             return (
-              <TouchableOpacity key={item.iso} style={[styles.datePill, isSelected && styles.datePillActive]} onPress={() => setSelectedDate(item.iso)} activeOpacity={0.8}>
-                <Text style={[styles.pillDay, isSelected && styles.pillDayActive]}>{item.day}</Text>
-                <Text style={[styles.pillNum, isSelected && styles.pillNumActive]}>{item.dateNum}</Text>
+              <TouchableOpacity
+                key={item.iso}
+                style={[
+                  styles.datePill,
+                  { borderRadius: theme.borderRadius.md, backgroundColor: isSelected ? theme.colors.primary : theme.colors.surface, borderColor: isSelected ? theme.colors.primary : `${theme.colors.textTertiary}20` },
+                ]}
+                onPress={() => setSelectedDate(item.iso)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.pillDay, { color: isSelected ? 'rgba(255, 255, 255, 0.85)' : theme.colors.textTertiary }]}>{item.day}</Text>
+                <Text style={[styles.pillNum, { color: isSelected ? theme.colors.surface : theme.colors.textPrimary }]}>{item.dateNum}</Text>
               </TouchableOpacity>
             );
           })}
@@ -120,14 +165,18 @@ const MealsScreen = React.memo(({ navigation }) => {
             {/* Snacks Section */}
             <SectionHeader title="Snacks" actionLabel="+ Add" onAction={() => handleOpenLog('Snacks')} style={styles.mt} />
             {snacks.length === 0 ? (
-              <View style={styles.emptySnacksBox}><Text style={styles.emptySnacksText}>No snacks logged today</Text></View>
+              <View style={[styles.emptySnacksBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}15` }]}>
+                <Text style={[styles.emptySnacksText, { color: theme.colors.textTertiary }]}>No snacks logged today</Text>
+              </View>
             ) : (
               snacks.map((s) => (
-                <View key={s.id} style={styles.snackRow}>
+                <View key={s.id} style={[styles.snackRow, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}15` }]}>
                   <Text style={styles.snackEmoji}>🍿</Text>
-                  <Text style={styles.snackName} numberOfLines={1}>{s.food_name || 'Snack'}</Text>
-                  <Text style={styles.snackPrice}>৳{s.price || 0}</Text>
-                  <TouchableOpacity onPress={() => setDeleteTarget(s)} style={styles.snackDelBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}><Text style={styles.snackDelIcon}>✕</Text></TouchableOpacity>
+                  <Text style={[styles.snackName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{s.food_name || 'Snack'}</Text>
+                  <Text style={[styles.snackPrice, { color: theme.colors.accent }]}>৳{s.price || 0}</Text>
+                  <TouchableOpacity onPress={() => setDeleteTarget(s)} style={styles.snackDelBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Text style={[styles.snackDelIcon, { color: theme.colors.textTertiary }]}>✕</Text>
+                  </TouchableOpacity>
                 </View>
               ))
             )}
@@ -139,7 +188,7 @@ const MealsScreen = React.memo(({ navigation }) => {
 
             {/* History Link */}
             <TouchableOpacity style={styles.historyBtn} onPress={() => navigation.navigate('MealsHistoryScreen')} activeOpacity={0.8}>
-              <Text style={styles.historyBtnText}>View Meals History →</Text>
+              <Text style={[styles.historyBtnText, { color: theme.colors.primary }]}>View Meals History →</Text>
             </TouchableOpacity>
           </>
         )}
@@ -148,43 +197,39 @@ const MealsScreen = React.memo(({ navigation }) => {
       {/* Confirmation Modal for Deleting Meals */}
       <ConfirmModal visible={Boolean(deleteTarget)} title="Delete Meal Log?" message="This will remove this meal and update your daily food spend." confirmLabel="Delete" cancelLabel="Keep" isDanger onConfirm={handleDeleteConfirm} onCancel={() => setDeleteTarget(null)} />
       <SideDrawer visible={drawerVisible} onClose={() => setDrawerVisible(false)} navigation={navigation} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}15`, marginBottom: spacing.xs },
-  menuBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
-  menuIcon: { fontSize: 24, color: colors.textPrimary, fontWeight: '700' },
-  headerTitle: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.textPrimary },
-  headerDateRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  headerBackBtn: { paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  headerBackText: { fontSize: 11, fontWeight: '700' },
+  content: { paddingVertical: 8, paddingBottom: 100 },
+  dateControlRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  dateTitleWrap: { flex: 1 },
+  dateSectionLabel: { fontSize: 13, fontWeight: '700' },
+  dateNavPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, gap: 6 },
   dateNavBtn: { padding: 4 },
-  navArrow: { fontSize: fontSizes.lg, fontWeight: '800', color: colors.primary },
-  headerDateText: { fontSize: fontSizes.xs + 1, fontWeight: '800', color: colors.textPrimary },
+  navArrow: { fontSize: 16, fontWeight: '800' },
+  dateNavText: { fontSize: 11, fontWeight: '800' },
   disabledNav: { opacity: 0.3 },
-  disabledArrow: { color: colors.textTertiary },
-  content: { padding: spacing.md, paddingBottom: 100 },
-  dateScroll: { flexDirection: 'row', gap: spacing.xs + 2, paddingBottom: spacing.md },
-  datePill: { width: 48, height: 58, borderRadius: borderRadius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: `${colors.textTertiary}20`, ...shadows.sm },
-  datePillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  pillDay: { fontSize: fontSizes.xs - 2, fontWeight: '700', color: colors.textTertiary, textTransform: 'uppercase' },
-  pillDayActive: { color: 'rgba(255, 255, 255, 0.8)' },
-  pillNum: { fontSize: fontSizes.sm + 1, fontWeight: '800', color: colors.textPrimary, marginTop: 2 },
-  pillNumActive: { color: colors.surface },
-  loadingBox: { marginTop: spacing.md },
-  mb: { marginBottom: spacing.sm },
-  mt: { marginTop: spacing.md },
-  emptySnacksBox: { padding: spacing.md, backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: `${colors.textTertiary}15`, alignItems: 'center', marginBottom: spacing.sm },
-  emptySnacksText: { fontSize: fontSizes.xs, color: colors.textTertiary, fontWeight: '600' },
-  snackRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: borderRadius.md, marginBottom: spacing.xs, borderWidth: 1, borderColor: `${colors.textTertiary}15` },
-  snackEmoji: { fontSize: 18, marginRight: spacing.sm },
-  snackName: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textPrimary, flex: 1 },
-  snackPrice: { fontSize: fontSizes.xs + 1, fontWeight: '800', color: colors.accent, marginRight: spacing.sm },
+  dateScroll: { flexDirection: 'row', gap: 6, paddingBottom: 16 },
+  datePill: { width: 48, height: 58, alignItems: 'center', justifyContent: 'center', borderWidth: 1, elevation: 1 },
+  pillDay: { fontSize: 8, fontWeight: '700', textTransform: 'uppercase' },
+  pillNum: { fontSize: 13, fontWeight: '800', marginTop: 2 },
+  loadingBox: { marginTop: 16 },
+  mb: { marginBottom: 8 },
+  mt: { marginTop: 16 },
+  emptySnacksBox: { padding: 16, borderWidth: 1, alignItems: 'center', marginBottom: 8 },
+  emptySnacksText: { fontSize: 10, fontWeight: '600' },
+  snackRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, marginBottom: 6, borderWidth: 1 },
+  snackEmoji: { fontSize: 18, marginRight: 8 },
+  snackName: { fontSize: 11, fontWeight: '700', flex: 1 },
+  snackPrice: { fontSize: 11, fontWeight: '800', marginRight: 8 },
   snackDelBtn: { padding: 4 },
-  snackDelIcon: { fontSize: fontSizes.xs, color: colors.textTertiary, fontWeight: '700' },
-  historyBtn: { alignItems: 'center', paddingVertical: spacing.md, marginTop: spacing.sm },
-  historyBtnText: { fontSize: fontSizes.sm, fontWeight: '800', color: colors.primary },
+  snackDelIcon: { fontSize: 10, fontWeight: '700' },
+  historyBtn: { alignItems: 'center', paddingVertical: 16, marginTop: 8 },
+  historyBtnText: { fontSize: 12, fontWeight: '800' },
 });
 
 export default MealsScreen;

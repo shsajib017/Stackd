@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const TABS = [
   { key: 'all', label: 'All' },
@@ -12,15 +12,25 @@ const TABS = [
 const TransactionFilters = React.memo(({
   searchQuery, onSearchChange, sortBy, onSortChange, activeTab, onTabChange,
 }) => {
+  const { theme } = useTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.surface, borderBottomColor: `${theme.colors.textTertiary}20` }]}>
       <View style={styles.searchSection}>
         <TextInput
-          style={styles.searchInput}
+          style={[
+            styles.searchInput,
+            {
+              backgroundColor: theme.colors.background,
+              borderColor: `${theme.colors.textTertiary}30`,
+              borderRadius: theme.borderRadius.md,
+              color: theme.colors.textPrimary,
+            },
+          ]}
           value={searchQuery}
           onChangeText={onSearchChange}
           placeholder="Search transactions..."
-          placeholderTextColor={colors.textTertiary}
+          placeholderTextColor={theme.colors.textTertiary}
           autoCorrect={false}
         />
       </View>
@@ -29,10 +39,22 @@ const TransactionFilters = React.memo(({
         {TABS.map((t) => (
           <Pressable
             key={t.key}
-            style={[styles.tab, activeTab === t.key && styles.tabActive]}
+            style={[
+              styles.tab,
+              {
+                backgroundColor: activeTab === t.key ? theme.colors.primary : theme.colors.background,
+                borderRadius: theme.borderRadius.sm,
+              },
+            ]}
             onPress={() => onTabChange(t.key)}
           >
-            <Text style={[styles.tabText, activeTab === t.key && styles.tabTextActive]}>
+            <Text
+              style={[
+                styles.tabText,
+                { color: activeTab === t.key ? '#FFFFFF' : theme.colors.textSecondary },
+                activeTab === t.key && styles.tabTextActive,
+              ]}
+            >
               {t.label}
             </Text>
           </Pressable>
@@ -44,41 +66,32 @@ const TransactionFilters = React.memo(({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: `${colors.textTertiary}20`,
   },
   searchSection: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   searchInput: {
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    fontSize: fontSizes.sm,
-    color: colors.textPrimary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    fontSize: 12,
     borderWidth: 1,
-    borderColor: `${colors.textTertiary}30`,
   },
   tabRow: {
     flexDirection: 'row',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    gap: spacing.xs,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    gap: 4,
   },
   tab: {
     flex: 1,
-    paddingVertical: spacing.xs + 2,
+    paddingVertical: 6,
     alignItems: 'center',
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.background,
   },
-  tabActive: { backgroundColor: colors.primary },
-  tabText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary },
-  tabTextActive: { color: colors.surface },
+  tabText: { fontSize: 10, fontWeight: '700' },
+  tabTextActive: { fontWeight: '800' },
 });
 
 export default TransactionFilters;

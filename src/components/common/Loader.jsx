@@ -1,26 +1,27 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Reusable loading indicator component with optional full-screen overlay and status message.
- *
- * @param {object} props
- * @param {'sm'|'lg'} [props.size='lg'] - Spinner size indicator.
- * @param {boolean} [props.fullScreen=false] - Full-screen centered overlay mode.
- * @param {string} [props.message] - Optional message rendered below spinner.
  */
 const Loader = React.memo(({
   size = 'lg',
   fullScreen = false,
   message,
 }) => {
+  const { theme } = useTheme();
   const spinnerSize = size === 'sm' ? 'small' : 'large';
 
   return (
-    <View style={[styles.container, fullScreen && styles.fullScreen]}>
-      <ActivityIndicator size={spinnerSize} color={colors.primary} />
-      {message ? <Text style={styles.message}>{message}</Text> : null}
+    <View
+      style={[
+        styles.container,
+        fullScreen && [styles.fullScreen, { backgroundColor: `${theme.colors.background}D9` }],
+      ]}
+    >
+      <ActivityIndicator size={spinnerSize} color={theme.colors.primary} />
+      {message ? <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text> : null}
     </View>
   );
 });
@@ -29,17 +30,15 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
+    padding: 24,
   },
   fullScreen: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     zIndex: 999,
   },
   message: {
-    marginTop: spacing.md,
-    fontSize: fontSizes.sm,
-    color: colors.textSecondary,
+    marginTop: 16,
+    fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
   },

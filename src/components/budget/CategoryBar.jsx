@@ -1,34 +1,30 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatBDT } from '../../utils/formatCurrency';
 import ProgressBar from '../common/ProgressBar';
 
 /**
  * Visual progress bar for an individual expense category spending vs limit.
- *
- * @param {object} props
- * @param {string} props.category - Category title/label.
- * @param {number} props.spent - Amount spent in this category.
- * @param {number} [props.limit] - Optional category budget limit.
  */
 const CategoryBar = React.memo(({ category, spent = 0, limit }) => {
+  const { theme } = useTheme();
   const ratio = limit && limit > 0 ? Math.min(spent / limit, 1) : 0;
   const isOver = limit && limit > 0 && spent > limit;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.categoryName}>{category}</Text>
-        <Text style={styles.amountText}>
+        <Text style={[styles.categoryName, { color: theme.colors.textPrimary }]}>{category}</Text>
+        <Text style={[styles.amountText, { color: theme.colors.textPrimary }]}>
           {formatBDT(spent)}
-          {limit ? <Text style={styles.limitText}> / {formatBDT(limit)}</Text> : null}
+          {limit ? <Text style={[styles.limitText, { color: theme.colors.textSecondary }]}> / {formatBDT(limit)}</Text> : null}
         </Text>
       </View>
       {limit && limit > 0 ? (
         <ProgressBar
           progress={ratio}
-          color={isOver ? colors.error : colors.primary}
+          color={isOver ? theme.colors.error : theme.colors.primary}
           height={6}
           showLabel={false}
         />
@@ -39,7 +35,7 @@ const CategoryBar = React.memo(({ category, spent = 0, limit }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: spacing.xs,
+    marginVertical: 4,
   },
   header: {
     flexDirection: 'row',
@@ -48,19 +44,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   categoryName: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '600',
-    color: colors.textPrimary,
   },
   amountText: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textPrimary,
   },
   limitText: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '400',
-    color: colors.textSecondary,
   },
 });
 

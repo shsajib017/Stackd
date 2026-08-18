@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../config/theme';
+import { useTheme } from '../config/ThemeContext';
 import SpeedDialOverlay from './SpeedDialOverlay';
 
 const TAB_ICONS = {
@@ -17,6 +17,7 @@ const TAB_ICONS = {
  */
 const CustomTabBar = React.memo(({ state, navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const [isDialOpen, setIsDialOpen] = useState(false);
   const dialProgress = useSharedValue(0);
 
@@ -50,7 +51,7 @@ const CustomTabBar = React.memo(({ state, navigation }) => {
         bottomInset={insets.bottom}
       />
 
-      <View style={[styles.container, { bottom: insets.bottom + 16 }]}>
+      <View style={[styles.container, { bottom: insets.bottom + 16, backgroundColor: theme.colors.surface }]}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
           const config = TAB_ICONS[route.name] || { active: '•', label: route.name };
@@ -63,13 +64,13 @@ const CustomTabBar = React.memo(({ state, navigation }) => {
           return (
             <React.Fragment key={route.key}>
               {index === 2 && (
-                <TouchableOpacity style={styles.fabButton} onPress={toggleSpeedDial} activeOpacity={0.85}>
-                  <Animated.Text style={[styles.fabText, fabIconStyle]}>+</Animated.Text>
+                <TouchableOpacity style={[styles.fabButton, { backgroundColor: theme.colors.primary }]} onPress={toggleSpeedDial} activeOpacity={0.85}>
+                  <Animated.Text style={[styles.fabText, { color: theme.colors.surface }, fabIconStyle]}>+</Animated.Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={onPress} style={styles.tabItem} activeOpacity={0.7}>
                 <Text style={[styles.tabIcon, isFocused && styles.tabIconActive]}>{config.active}</Text>
-                {isFocused && <Text style={styles.tabLabel}>{config.label}</Text>}
+                {isFocused && <Text style={[styles.tabLabel, { color: theme.colors.primary }]}>{config.label}</Text>}
               </TouchableOpacity>
             </React.Fragment>
           );
@@ -81,22 +82,22 @@ const CustomTabBar = React.memo(({ state, navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute', left: spacing.md, right: spacing.md, height: 64,
-    backgroundColor: colors.surface, borderRadius: borderRadius.full,
+    position: 'absolute', left: 16, right: 16, height: 64,
+    borderRadius: 999,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    paddingHorizontal: spacing.sm, ...shadows.md, zIndex: 95,
+    paddingHorizontal: 8, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, zIndex: 95,
   },
   tabItem: {
-    flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: spacing.xs,
+    flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 4,
   },
-  tabIcon: { fontSize: fontSizes.lg, opacity: 0.5 },
-  tabIconActive: { fontSize: fontSizes.xl, opacity: 1, transform: [{ scale: 1.1 }] },
-  tabLabel: { fontSize: fontSizes.xs, color: colors.primary, fontWeight: 'bold', marginTop: 2 },
+  tabIcon: { fontSize: 16, opacity: 0.5 },
+  tabIconActive: { fontSize: 20, opacity: 1, transform: [{ scale: 1.1 }] },
+  tabLabel: { fontSize: 10, fontWeight: 'bold', marginTop: 2 },
   fabButton: {
-    width: 56, height: 56, borderRadius: 28, backgroundColor: colors.primary,
-    alignItems: 'center', justifyContent: 'center', top: -18, ...shadows.md,
+    width: 56, height: 56, borderRadius: 28,
+    alignItems: 'center', justifyContent: 'center', top: -18, elevation: 4,
   },
-  fabText: { color: colors.surface, fontSize: 28, lineHeight: 32, fontWeight: '300' },
+  fabText: { fontSize: 28, lineHeight: 32, fontWeight: '300' },
 });
 
 export default CustomTabBar;

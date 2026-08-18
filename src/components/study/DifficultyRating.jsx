@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 const DIFFICULTY_LABELS = {
   1: '1★ Very easy',
@@ -14,9 +14,11 @@ const DIFFICULTY_LABELS = {
  * 5-Star Interactive Difficulty Selector with descriptive helper text.
  */
 const DifficultyRating = React.memo(({ rating = 3, onRatingChange }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Difficulty</Text>
+      <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Difficulty</Text>
       <View style={styles.starsRow}>
         {[1, 2, 3, 4, 5].map((star) => {
           const isSelected = star <= rating;
@@ -28,14 +30,14 @@ const DifficultyRating = React.memo(({ rating = 3, onRatingChange }) => {
               activeOpacity={0.7}
               hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
             >
-              <Text style={[styles.starText, isSelected ? styles.starFilled : styles.starEmpty]}>
+              <Text style={[styles.starText, { color: isSelected ? theme.colors.accent : `${theme.colors.textTertiary}50` }]}>
                 ★
               </Text>
             </TouchableOpacity>
           );
         })}
       </View>
-      <Text style={styles.helperText}>
+      <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>
         {DIFFICULTY_LABELS[rating] || DIFFICULTY_LABELS[3]}
       </Text>
     </View>
@@ -44,18 +46,17 @@ const DifficultyRating = React.memo(({ rating = 3, onRatingChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   label: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 8,
     marginBottom: 4,
   },
   starBtn: {
@@ -64,16 +65,9 @@ const styles = StyleSheet.create({
   starText: {
     fontSize: 28,
   },
-  starFilled: {
-    color: colors.accent,
-  },
-  starEmpty: {
-    color: `${colors.textTertiary}50`,
-  },
   helperText: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '600',
-    color: colors.textSecondary,
     marginTop: 2,
   },
 });

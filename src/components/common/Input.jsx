@@ -1,22 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Reusable form input component with label, error display, and accessory icons.
- *
- * @param {object} props
- * @param {string} props.value - Controlled input value.
- * @param {(text: string) => void} props.onChangeText - Change text callback.
- * @param {string} [props.placeholder] - Placeholder text.
- * @param {string} [props.label] - Field label above input.
- * @param {string} [props.error] - Inline error message below input.
- * @param {boolean} [props.secureTextEntry=false] - Password masking boolean.
- * @param {boolean} [props.multiline=false] - Multiline text area mode.
- * @param {string} [props.keyboardType='default'] - Keyboard type.
- * @param {React.ReactNode} [props.rightIcon] - Accessory icon on the right.
- * @param {React.ReactNode} [props.leftIcon] - Accessory icon on the left.
- * @param {object|array} [props.style] - Style override for the root container.
  */
 const Input = React.memo(({
   value,
@@ -31,17 +18,34 @@ const Input = React.memo(({
   leftIcon,
   style,
 }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={[styles.container, style]}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
-      <View style={[styles.inputWrapper, error ? styles.inputWrapperError : null, multiline && styles.multilineWrapper]}>
+      {label ? <Text style={[styles.label, { color: theme.colors.textPrimary }]}>{label}</Text> : null}
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            borderColor: `${theme.colors.textTertiary}40`,
+            borderRadius: theme.borderRadius.md,
+            backgroundColor: theme.colors.surface,
+          },
+          error ? { borderColor: theme.colors.error } : null,
+          multiline && styles.multilineWrapper,
+        ]}
+      >
         {leftIcon ? <View style={styles.leftIconWrapper}>{leftIcon}</View> : null}
         <TextInput
-          style={[styles.input, multiline && styles.multilineInput]}
+          style={[
+            styles.input,
+            { color: theme.colors.textPrimary },
+            multiline && styles.multilineInput,
+          ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={colors.textTertiary}
+          placeholderTextColor={theme.colors.textTertiary}
           secureTextEntry={secureTextEntry}
           multiline={multiline}
           keyboardType={keyboardType}
@@ -51,7 +55,7 @@ const Input = React.memo(({
         />
         {rightIcon ? <View style={styles.rightIconWrapper}>{rightIcon}</View> : null}
       </View>
-      {Boolean(error) && <Text style={styles.errorText}>{error}</Text>}
+      {Boolean(error) && <Text style={[styles.errorText, { color: theme.colors.error }]}>{error}</Text>}
     </View>
   );
 });
@@ -59,51 +63,42 @@ const Input = React.memo(({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   label: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.textTertiary,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.md,
-  },
-  inputWrapperError: {
-    borderColor: colors.error,
+    paddingHorizontal: 16,
   },
   multilineWrapper: {
     minHeight: 100,
     alignItems: 'flex-start',
-    paddingVertical: spacing.sm,
+    paddingVertical: 8,
   },
   input: {
     flex: 1,
-    fontSize: fontSizes.md,
-    color: colors.textPrimary,
-    paddingVertical: spacing.sm + 4,
+    fontSize: 14,
+    paddingVertical: 12,
   },
   multilineInput: {
     minHeight: 80,
     paddingVertical: 0,
   },
   leftIconWrapper: {
-    marginRight: spacing.xs + 2,
+    marginRight: 6,
   },
   rightIconWrapper: {
-    marginLeft: spacing.xs + 2,
+    marginLeft: 6,
   },
   errorText: {
-    fontSize: fontSizes.xs,
-    color: colors.error,
-    marginTop: spacing.xs,
+    fontSize: 10,
+    marginTop: 4,
   },
 });
 

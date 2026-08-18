@@ -2,17 +2,19 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Markdown from 'react-native-markdown-display';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useNotes from '../../hooks/useNotes';
 import useUIStore from '../../store/useUIStore';
 import { getReadingTime, getSavedAgoText, getWordCount, markdownStyles } from '../../utils/markdownHelpers';
 
 import ConfirmModal from '../../components/common/ConfirmModal';
 import EditorToolbar from '../../components/study/EditorToolbar';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 /** Markdown Note Editor with top action buttons beside title. */
 const NotesEditorScreen = React.memo(({ navigation, route }) => {
+  const { theme } = useTheme();
   const initialNote = route.params?.note;
   const subjectId = route.params?.subjectId || initialNote?.subject_id;
   const isEditMode = Boolean(initialNote?.id);
@@ -105,58 +107,82 @@ const NotesEditorScreen = React.memo(({ navigation, route }) => {
   const isSaved = saveStatus === 'saved';
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <AppHeader title={isEditMode ? 'Edit Note' : 'New Note'} showBack onBack={async () => { await handleSave(true); navigation.goBack(); }} />
-      <View style={styles.titleSection}>
-        <View style={styles.titleRow}>
-          <TextInput style={styles.titleInput} value={title} onChangeText={setTitle} placeholder="Untitled note" placeholderTextColor={colors.textTertiary} maxLength={100} autoFocus={!isEditMode} />
-          <View style={styles.titleActionsRow}>
-            {isEditMode && (
-              <TouchableOpacity onPress={() => setShowDeleteModal(true)} style={styles.deleteIconBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                <Text style={styles.deleteIconText}>🗑</Text>
+    <ScreenWrapper noPadding>
+      <KeyboardAvoidingView style={styles.flexOne} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <AppHeader title={isEditMode ? 'Edit Note' : 'New Note'} showBack onBack={async () => { await handleSave(true); navigation.goBack(); }} />
+        <View style={[styles.titleSection, { backgroundColor: theme.colors.surface, borderBottomColor: `${theme.colors.textTertiary}15` }]}>
+          <View style={styles.titleRow}>
+            <TextInput
+              style={[styles.titleInput, { color: theme.colors.textPrimary }]}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="Untitled note"
+              placeholderTextColor={theme.colors.textTertiary}
+              maxLength={100}
+              autoFocus={!isEditMode}
+            />
+            <View style={styles.titleActionsRow}>
+              {isEditMode && (
+                <TouchableOpacity onPress={() => setShowDeleteModal(true)} style={[styles.deleteIconBtn, { backgroundColor: `${theme.colors.error}15`, borderRadius: theme.borderRadius.sm }]} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Text style={styles.deleteIconText}>🗑</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => handleSave(false)}
+                style={[
+                  styles.savePillBtn,
+                  { borderRadius: theme.borderRadius.full, backgroundColor: theme.colors.primary },
+                  isSaving && { backgroundColor: `${theme.colors.textTertiary}60` },
+                  isSaved && { backgroundColor: theme.colors.success },
+                ]}
+                disabled={isSaving || isSaved}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.savePillText, { color: theme.colors.surface }]}>{isSaving ? 'Saving...' : isSaved ? 'Saved ✓' : 'Save'}</Text>
               </TouchableOpacity>
-            )}
-            <TouchableOpacity onPress={() => handleSave(false)} style={[styles.savePillBtn, isSaving && styles.saveBtnSaving, isSaved && styles.saveBtnSaved]} disabled={isSaving || isSaved} activeOpacity={0.8}>
-              <Text style={styles.savePillText}>{isSaving ? 'Saving...' : isSaved ? 'Saved ✓' : 'Save'}</Text>
-            </TouchableOpacity>
+            </View>
           </View>
+          <Text style={[styles.metaText, { color: theme.colors.textTertiary }]}>{savedAgoText ? `${savedAgoText} • ` : ''}{wordCount} words • {readingTime}m read</Text>
         </View>
-        <Text style={styles.metaText}>{savedAgoText ? `${savedAgoText} • ` : ''}{wordCount} words • {readingTime}m read</Text>
-      </View>
 
-      <EditorToolbar onInsertShortcut={handleInsertShortcut} isPreview={isPreview} onTogglePreview={() => setIsPreview((p) => !p)} />
+        <EditorToolbar onInsertShortcut={handleInsertShortcut} isPreview={isPreview} onTogglePreview={() => setIsPreview((p) => !p)} />
 
-      {isPreview ? (
-        <ScrollView style={styles.previewScroll} contentContainerStyle={styles.previewContent}>
-          <Markdown style={markdownStyles}>{content || '*No content to preview...*'}</Markdown>
-        </ScrollView>
-      ) : (
-        <TextInput style={styles.editorInput} value={content} onChangeText={setContent} placeholder="Start writing lecture notes, summaries, formulas..." placeholderTextColor={colors.textTertiary} multiline textAlignVertical="top" />
-      )}
+        {isPreview ? (
+          <ScrollView style={[styles.previewScroll, { backgroundColor: theme.colors.surface }]} contentContainerStyle={styles.previewContent}>
+            <Markdown style={markdownStyles}>{content || '*No content to preview...*'}</Markdown>
+          </ScrollView>
+        ) : (
+          <TextInput
+            style={[styles.editorInput, { backgroundColor: theme.colors.surface, color: theme.colors.textPrimary }]}
+            value={content}
+            onChangeText={setContent}
+            placeholder="Start writing lecture notes, summaries, formulas..."
+            placeholderTextColor={theme.colors.textTertiary}
+            multiline
+            textAlignVertical="top"
+          />
+        )}
 
-      <ConfirmModal visible={showDeleteModal} title="Delete this note?" message="This action cannot be undone." confirmLabel="Delete" isDanger onConfirm={handleDelete} onCancel={() => setShowDeleteModal(false)} />
-    </KeyboardAvoidingView>
+        <ConfirmModal visible={showDeleteModal} title="Delete this note?" message="This action cannot be undone." confirmLabel="Delete" isDanger onConfirm={handleDelete} onCancel={() => setShowDeleteModal(false)} />
+      </KeyboardAvoidingView>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  titleSection: { backgroundColor: colors.surface, paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.xs, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}15` },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
-  titleInput: { flex: 1, fontSize: fontSizes.xl, fontWeight: '600', color: colors.textPrimary, padding: 0 },
-  titleActionsRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  deleteIconBtn: { padding: 6, borderRadius: borderRadius.sm, backgroundColor: `${colors.error}15` },
+  flexOne: { flex: 1 },
+  titleSection: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, borderBottomWidth: 1 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  titleInput: { flex: 1, fontSize: 18, fontWeight: '600', padding: 0 },
+  titleActionsRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  deleteIconBtn: { padding: 6 },
   deleteIconText: { fontSize: 16 },
-  savePillBtn: { backgroundColor: colors.primary, paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: borderRadius.full, minWidth: 62, alignItems: 'center' },
-  saveBtnSaving: { backgroundColor: `${colors.textTertiary}60` },
-  saveBtnSaved: { backgroundColor: colors.success },
-  savePillText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.surface },
-  metaText: { fontSize: fontSizes.xs - 1, color: colors.textTertiary, fontWeight: '600', marginTop: 6 },
-  headerBtn: { paddingHorizontal: spacing.xs },
-  headerIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  editorInput: { flex: 1, backgroundColor: colors.surface, padding: spacing.md, fontSize: fontSizes.sm + 1, color: colors.textPrimary, lineHeight: 22 },
-  previewScroll: { flex: 1, backgroundColor: colors.surface },
-  previewContent: { padding: spacing.md, paddingBottom: 60 },
+  savePillBtn: { paddingHorizontal: 16, paddingVertical: 6, minWidth: 62, alignItems: 'center' },
+  savePillText: { fontSize: 10, fontWeight: '700' },
+  metaText: { fontSize: 9, fontWeight: '600', marginTop: 6 },
+  editorInput: { flex: 1, padding: 16, fontSize: 13, lineHeight: 22 },
+  previewScroll: { flex: 1 },
+  previewContent: { padding: 16, paddingBottom: 60 },
 });
 
 export default NotesEditorScreen;

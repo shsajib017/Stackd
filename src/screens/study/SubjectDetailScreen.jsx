@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useMaterials from '../../hooks/useMaterials';
 import useNotes from '../../hooks/useNotes';
 import useStudySessions from '../../hooks/useStudySessions';
@@ -15,13 +15,15 @@ import HotTopicsTab from '../../components/study/HotTopicsTab';
 import MaterialsTab from '../../components/study/MaterialsTab';
 import NotesTab from '../../components/study/NotesTab';
 import ScheduleTab from '../../components/study/ScheduleTab';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 const TABS = ['Schedule', 'Notes', 'Materials', 'Hot Topics'];
 
-/** Complete Subject Detail Screen with 4 functional tabs, metrics, and floating edit button. */
+/** Complete Subject Detail Screen with subject color tinted background and tabs. */
 const SubjectDetailScreen = React.memo(({ navigation, route }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const fabBottom = insets.bottom + 80 + 16;
   const subject = route.params?.subject || {};
   const [activeTab, setActiveTab] = useState('Schedule');
@@ -71,24 +73,47 @@ const SubjectDetailScreen = React.memo(({ navigation, route }) => {
     navigation.navigate('PomodoroModal', { session });
   }, [navigation]);
 
+  const subjectColor = subject.color || theme.colors.primary;
+  const subjectGradient = useMemo(() => [
+    `${subjectColor}25`,
+    theme.colors.background,
+  ], [subjectColor, theme.colors.background]);
+
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper gradientColors={subjectGradient}>
       <AppHeader title={subject.name || 'Subject Details'} showBack onBack={() => navigation.goBack()} />
+
       {/* Stats Row */}
       <View style={styles.statsRow}>
-        <View style={styles.statWrap}><StatCard icon="⏳" value={examStatLabel} label="Exam" color={colors.accent} /></View>
-        <View style={styles.statWrap}><StatCard icon="🎯" value={`${completedCount}/${subjectSessions.length}`} label="Sessions" color={colors.primary} /></View>
-        <View style={styles.statWrap}><StatCard icon="🎓" value={`${subject.credit_hours || 3} cr`} label="Credits" color={colors.success} /></View>
-        <View style={styles.statWrap}><StatCard icon="⭐" value={`${subject.difficulty || 3}★`} label="Level" color={colors.accent} /></View>
+        <View style={styles.statWrap}><StatCard icon="⏳" value={examStatLabel} label="Exam" color={theme.colors.accent} /></View>
+        <View style={styles.statWrap}><StatCard icon="🎯" value={`${completedCount}/${subjectSessions.length}`} label="Sessions" color={theme.colors.primary} /></View>
+        <View style={styles.statWrap}><StatCard icon="🎓" value={`${subject.credit_hours || 3} cr`} label="Credits" color={theme.colors.success} /></View>
+        <View style={styles.statWrap}><StatCard icon="⭐" value={`${subject.difficulty || 3}★`} label="Level" color={theme.colors.accent} /></View>
       </View>
 
       {/* Tab Navigation Bar */}
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
         {TABS.map((tab) => {
           const isActive = activeTab === tab;
           return (
-            <TouchableOpacity key={tab} style={[styles.tabItem, isActive && styles.tabItemActive]} onPress={() => setActiveTab(tab)} activeOpacity={0.8}>
-              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>{tab}</Text>
+            <TouchableOpacity
+              key={tab}
+              style={[
+                styles.tabItem,
+                { borderRadius: theme.borderRadius.sm },
+                isActive && { backgroundColor: subjectColor },
+              ]}
+              onPress={() => setActiveTab(tab)}
+              activeOpacity={0.8}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  { color: isActive ? '#FFFFFF' : theme.colors.textSecondary },
+                ]}
+              >
+                {tab}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -111,29 +136,24 @@ const SubjectDetailScreen = React.memo(({ navigation, route }) => {
       {/* Floating Edit Subject Button */}
       {activeTab !== 'Notes' && (
         <TouchableOpacity
-          style={[styles.editFab, { bottom: fabBottom }]}
+          style={[styles.editFab, { bottom: fabBottom, backgroundColor: subjectColor }]}
           onPress={() => navigation.navigate('AddSubjectScreen', { subject, mode: 'edit' })}
           activeOpacity={0.85}
         >
           <Text style={styles.editFabIcon}>✏️</Text>
         </TouchableOpacity>
       )}
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  headerBtn: { paddingHorizontal: spacing.sm },
-  headerIcon: { fontSize: fontSizes.xl, color: colors.surface, fontWeight: '700' },
-  statsRow: { flexDirection: 'row', gap: 6, paddingHorizontal: spacing.md, paddingTop: spacing.md, marginBottom: spacing.xs },
+  statsRow: { flexDirection: 'row', gap: 6, paddingTop: 12, marginBottom: 4 },
   statWrap: { flex: 1 },
-  tabBar: { flexDirection: 'row', backgroundColor: colors.surface, marginHorizontal: spacing.md, marginVertical: spacing.sm, borderRadius: borderRadius.md, padding: 3, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  tabItem: { flex: 1, paddingVertical: spacing.xs + 3, alignItems: 'center', borderRadius: borderRadius.sm },
-  tabItemActive: { backgroundColor: colors.primary },
-  tabText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary },
-  tabTextActive: { color: colors.surface },
-  editFab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', ...shadows.md, zIndex: 10 },
+  tabBar: { flexDirection: 'row', marginVertical: 8, padding: 3, borderWidth: 1 },
+  tabItem: { flex: 1, paddingVertical: 6, alignItems: 'center' },
+  tabText: { fontSize: 10, fontWeight: '700' },
+  editFab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4, zIndex: 10 },
   editFabIcon: { fontSize: 24 },
 });
 

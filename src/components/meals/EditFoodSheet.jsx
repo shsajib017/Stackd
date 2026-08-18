@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import Button from '../common/Button';
 
 /** Bottom sheet modal for editing custom food item data. */
 const EditFoodSheet = React.memo(({ visible, food, onClose, onSave, isSaving }) => {
+  const { theme } = useTheme();
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [calories, setCalories] = useState('');
@@ -42,24 +43,50 @@ const EditFoodSheet = React.memo(({ visible, food, onClose, onSave, isSaving }) 
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView style={styles.overlay} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { backgroundColor: theme.colors.surface, borderTopLeftRadius: theme.borderRadius.xl, borderTopRightRadius: theme.borderRadius.xl }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Edit Custom Food</Text>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}><Text style={styles.close}>✕</Text></TouchableOpacity>
+            <Text style={[styles.title, { color: theme.colors.textPrimary }]}>Edit Custom Food</Text>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}><Text style={[styles.close, { color: theme.colors.textSecondary }]}>✕</Text></TouchableOpacity>
           </View>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.label}>Food name</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} placeholder="Food name" placeholderTextColor={colors.textTertiary} autoCapitalize="words" />
-            <Text style={styles.label}>Price (BDT)</Text>
-            <TextInput style={styles.input} value={price} onChangeText={setPrice} placeholder="Price" placeholderTextColor={colors.textTertiary} keyboardType="numeric" />
-            <Text style={styles.label}>Nutrition (optional)</Text>
+            <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Food name</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.md, color: theme.colors.textPrimary }]}
+              value={name}
+              onChangeText={setName}
+              placeholder="Food name"
+              placeholderTextColor={theme.colors.textTertiary}
+              autoCapitalize="words"
+            />
+            <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Price (BDT)</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.md, color: theme.colors.textPrimary }]}
+              value={price}
+              onChangeText={setPrice}
+              placeholder="Price"
+              placeholderTextColor={theme.colors.textTertiary}
+              keyboardType="numeric"
+            />
+            <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Nutrition (optional)</Text>
             <View style={styles.grid}>
-              <View style={styles.col}><Text style={styles.colLabel}>kcal</Text><TextInput style={styles.smallInput} value={calories} onChangeText={setCalories} placeholder="0" placeholderTextColor={colors.textTertiary} keyboardType="numeric" /></View>
-              <View style={styles.col}><Text style={styles.colLabel}>Protein (g)</Text><TextInput style={styles.smallInput} value={protein} onChangeText={setProtein} placeholder="0" placeholderTextColor={colors.textTertiary} keyboardType="numeric" /></View>
-              <View style={styles.col}><Text style={styles.colLabel}>Carbs (g)</Text><TextInput style={styles.smallInput} value={carbs} onChangeText={setCarbs} placeholder="0" placeholderTextColor={colors.textTertiary} keyboardType="numeric" /></View>
-              <View style={styles.col}><Text style={styles.colLabel}>Fat (g)</Text><TextInput style={styles.smallInput} value={fat} onChangeText={setFat} placeholder="0" placeholderTextColor={colors.textTertiary} keyboardType="numeric" /></View>
+              <View style={styles.col}>
+                <Text style={[styles.colLabel, { color: theme.colors.textSecondary }]}>kcal</Text>
+                <TextInput style={[styles.smallInput, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.sm, color: theme.colors.textPrimary }]} value={calories} onChangeText={setCalories} placeholder="0" placeholderTextColor={theme.colors.textTertiary} keyboardType="numeric" />
+              </View>
+              <View style={styles.col}>
+                <Text style={[styles.colLabel, { color: theme.colors.textSecondary }]}>Protein (g)</Text>
+                <TextInput style={[styles.smallInput, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.sm, color: theme.colors.textPrimary }]} value={protein} onChangeText={setProtein} placeholder="0" placeholderTextColor={theme.colors.textTertiary} keyboardType="numeric" />
+              </View>
+              <View style={styles.col}>
+                <Text style={[styles.colLabel, { color: theme.colors.textSecondary }]}>Carbs (g)</Text>
+                <TextInput style={[styles.smallInput, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.sm, color: theme.colors.textPrimary }]} value={carbs} onChangeText={setCarbs} placeholder="0" placeholderTextColor={theme.colors.textTertiary} keyboardType="numeric" />
+              </View>
+              <View style={styles.col}>
+                <Text style={[styles.colLabel, { color: theme.colors.textSecondary }]}>Fat (g)</Text>
+                <TextInput style={[styles.smallInput, { backgroundColor: theme.colors.background, borderColor: `${theme.colors.textTertiary}30`, borderRadius: theme.borderRadius.sm, color: theme.colors.textPrimary }]} value={fat} onChangeText={setFat} placeholder="0" placeholderTextColor={theme.colors.textTertiary} keyboardType="numeric" />
+              </View>
             </View>
-            {error ? <Text style={styles.err}>{error}</Text> : null}
+            {error ? <Text style={[styles.err, { color: theme.colors.error }]}>{error}</Text> : null}
             <Button label="Save changes" onPress={handleSave} loading={isSaving} fullWidth style={styles.btn} />
           </ScrollView>
         </View>
@@ -71,18 +98,18 @@ const EditFoodSheet = React.memo(({ visible, food, onClose, onSave, isSaving }) 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   backdrop: { flex: 1 },
-  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl, padding: spacing.lg, maxHeight: '85%' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-  title: { fontSize: fontSizes.md + 1, fontWeight: '700', color: colors.textPrimary },
-  close: { fontSize: fontSizes.md, color: colors.textSecondary, fontWeight: '700' },
-  label: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textPrimary, marginBottom: 4, marginTop: spacing.xs },
-  input: { backgroundColor: colors.background, borderWidth: 1, borderColor: `${colors.textTertiary}30`, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: 10, fontSize: fontSizes.sm, color: colors.textPrimary, marginBottom: spacing.sm },
-  grid: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.sm },
+  sheet: { padding: 24, maxHeight: '85%' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  title: { fontSize: 15, fontWeight: '700' },
+  close: { fontSize: 14, fontWeight: '700' },
+  label: { fontSize: 11, fontWeight: '700', marginBottom: 4, marginTop: 4 },
+  input: { borderWidth: 1, paddingHorizontal: 16, paddingVertical: 10, fontSize: 12, marginBottom: 8 },
+  grid: { flexDirection: 'row', gap: 4, marginBottom: 8 },
   col: { flex: 1 },
-  colLabel: { fontSize: fontSizes.xs - 1, color: colors.textSecondary, marginBottom: 2, textAlign: 'center' },
-  smallInput: { backgroundColor: colors.background, borderWidth: 1, borderColor: `${colors.textTertiary}30`, borderRadius: borderRadius.sm, paddingVertical: 6, fontSize: fontSizes.xs + 1, color: colors.textPrimary, textAlign: 'center' },
-  err: { fontSize: fontSizes.xs, color: colors.error, textAlign: 'center', marginVertical: spacing.xs },
-  btn: { marginTop: spacing.sm, marginBottom: spacing.sm },
+  colLabel: { fontSize: 9, marginBottom: 2, textAlign: 'center' },
+  smallInput: { borderWidth: 1, paddingVertical: 6, fontSize: 11, textAlign: 'center' },
+  err: { fontSize: 10, textAlign: 'center', marginVertical: 4 },
+  btn: { marginTop: 8, marginBottom: 8 },
 });
 
 export default EditFoodSheet;

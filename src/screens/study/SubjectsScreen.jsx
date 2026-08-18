@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { ActionSheetIOS, Alert, FlatList, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useStudySessions from '../../hooks/useStudySessions';
 import useStudyStore from '../../store/useStudyStore';
 import { deleteSubject as removeSubjectFromDB } from '../../supabase/subjects';
@@ -14,11 +14,13 @@ import SkeletonCard from '../../components/common/SkeletonCard';
 import StatCard from '../../components/common/StatCard';
 import StatusChip from '../../components/common/StatusChip';
 import ProgressRing from '../../components/study/ProgressRing';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 /** Subjects Management and Overview Screen. */
 const SubjectsScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const fabBottom = insets.bottom + 80 + 16;
   const subjects = useStudyStore((state) => state.subjects);
   const removeSubjectLocal = useStudyStore((state) => state.removeSubjectLocal);
@@ -87,13 +89,13 @@ const SubjectsScreen = React.memo(({ navigation }) => {
   const renderHeader = useCallback(() => (
     <View>
       <View style={styles.summaryRow}>
-        <View style={styles.statWrap}><StatCard icon="📚" value={String(summary.total)} label="Subjects" color={colors.primary} /></View>
-        <View style={styles.statWrap}><StatCard icon="⏳" value={summary.nearestExam} label="Nearest Exam" color={colors.accent} /></View>
-        <View style={styles.statWrap}><StatCard icon="📅" value={String(summary.weekSessions)} label="This Week" color={colors.success} /></View>
+        <View style={styles.statWrap}><StatCard icon="📚" value={String(summary.total)} label="Subjects" color={theme.colors.primary} /></View>
+        <View style={styles.statWrap}><StatCard icon="⏳" value={summary.nearestExam} label="Nearest Exam" color={theme.colors.accent} /></View>
+        <View style={styles.statWrap}><StatCard icon="📅" value={String(summary.weekSessions)} label="This Week" color={theme.colors.success} /></View>
       </View>
       {isLoading ? <View style={styles.skeletonList}><SkeletonCard height={95} style={styles.mb} /><SkeletonCard height={95} /></View> : null}
     </View>
-  ), [isLoading, summary]);
+  ), [isLoading, summary, theme.colors.accent, theme.colors.primary, theme.colors.success]);
 
   const renderSubjectCard = useCallback(({ item }) => {
     const daysLeft = item.exam_date ? getDaysRemaining(item.exam_date) : null;
@@ -101,64 +103,87 @@ const SubjectsScreen = React.memo(({ navigation }) => {
     const chipLabel = daysLeft === null ? 'No exam date' : (daysLeft === 0 ? 'Exam today!' : `${daysLeft}d to exam`);
 
     return (
-      <TouchableOpacity style={[styles.card, { borderLeftColor: item.color || colors.primary }]} onPress={() => navigation.navigate('SubjectDetailScreen', { subject: item })} onLongPress={() => handleLongPress(item)} activeOpacity={0.75}>
+      <TouchableOpacity
+        style={[styles.card, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.lg, borderLeftColor: item.color || theme.colors.primary }]}
+        onPress={() => navigation.navigate('SubjectDetailScreen', { subject: item })}
+        onLongPress={() => handleLongPress(item)}
+        activeOpacity={0.75}
+      >
         <View style={styles.cardHeader}>
           <View style={styles.cardInfo}>
-            <Text style={styles.subjectName} numberOfLines={1}>{item.name}</Text>
+            <Text style={[styles.subjectName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{item.name}</Text>
             <View style={styles.badgeRow}>
-              {item.credit_hours ? <View style={styles.creditBadge}><Text style={styles.creditText}>{item.credit_hours} cr</Text></View> : null}
+              {item.credit_hours ? (
+                <View style={[styles.creditBadge, { backgroundColor: `${theme.colors.primary}12`, borderRadius: theme.borderRadius.sm }]}>
+                  <Text style={[styles.creditText, { color: theme.colors.primary }]}>{item.credit_hours} cr</Text>
+                </View>
+              ) : null}
               <View style={styles.difficultyDots}>
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <View key={i} style={[styles.diffDot, i < (item.difficulty || 1) ? styles.diffDotActive : styles.diffDotInactive]} />
+                  <View
+                    key={i}
+                    style={[
+                      styles.diffDot,
+                      i < (item.difficulty || 1)
+                        ? { backgroundColor: theme.colors.accent }
+                        : { backgroundColor: `${theme.colors.textTertiary}40` },
+                    ]}
+                  />
                 ))}
               </View>
             </View>
           </View>
-          <ProgressRing progress={subjectProgressMap[item.id] || 0} size={42} color={item.color || colors.primary} />
+          <ProgressRing progress={subjectProgressMap[item.id] || 0} size={42} color={item.color || theme.colors.primary} />
         </View>
         <View style={styles.cardFooter}>
-          {item.exam_date ? <Text style={styles.examDateText}>📅 {formatDateShort(item.exam_date)}</Text> : <View />}
+          {item.exam_date ? <Text style={[styles.examDateText, { color: theme.colors.textSecondary }]}>📅 {formatDateShort(item.exam_date)}</Text> : <View />}
           <StatusChip label={chipLabel} type={chipType} size="sm" />
         </View>
       </TouchableOpacity>
     );
-  }, [handleLongPress, navigation, subjectProgressMap]);
+  }, [handleLongPress, navigation, subjectProgressMap, theme.borderRadius.lg, theme.borderRadius.sm, theme.colors.accent, theme.colors.primary, theme.colors.surface, theme.colors.textPrimary, theme.colors.textSecondary, theme.colors.textTertiary]);
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader title="My Subjects" showBack onBack={() => navigation.goBack()} />
-      <FlatList data={isLoading ? [] : (subjects || [])} keyExtractor={(item) => item.id} ListHeaderComponent={renderHeader} renderItem={renderSubjectCard} ListEmptyComponent={!isLoading ? <EmptyState icon="📚" title="No subjects added yet" subtitle="Add your subjects to start planning your study schedule" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} /> : null} contentContainerStyle={[styles.content, { paddingBottom: fabBottom + 60 }]} showsVerticalScrollIndicator={false} />
-      <TouchableOpacity style={[styles.fab, { bottom: fabBottom }]} onPress={() => navigation.navigate('AddSubjectScreen')} activeOpacity={0.85}><Text style={styles.fabIcon}>+</Text></TouchableOpacity>
+      <FlatList
+        data={isLoading ? [] : (subjects || [])}
+        keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
+        renderItem={renderSubjectCard}
+        ListEmptyComponent={!isLoading ? (
+          <EmptyState icon="📚" title="No subjects added yet" subtitle="Add your subjects to start planning your study schedule" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} />
+        ) : null}
+        contentContainerStyle={[styles.content, { paddingBottom: fabBottom + 60 }]}
+        showsVerticalScrollIndicator={false}
+      />
+      <TouchableOpacity style={[styles.fab, { bottom: fabBottom, backgroundColor: theme.colors.accent }]} onPress={() => navigation.navigate('AddSubjectScreen')} activeOpacity={0.85}>
+        <Text style={[styles.fabIcon, { color: theme.colors.surface }]}>+</Text>
+      </TouchableOpacity>
       <ConfirmModal visible={Boolean(deleteTarget)} title="Delete Subject?" message={`Are you sure you want to delete "${deleteTarget?.name}"? All associated sessions will also be deleted.`} confirmLabel="Delete" isDanger onConfirm={handleDeleteConfirm} onCancel={() => setDeleteTarget(null)} loading={isDeleting} />
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  headerBtn: { paddingHorizontal: spacing.sm },
-  headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  headerPlusIcon: { fontSize: fontSizes.xxl, color: colors.primary, fontWeight: '800' },
-  content: { padding: spacing.md },
-  summaryRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
+  content: { paddingVertical: 8 },
+  summaryRow: { flexDirection: 'row', gap: 6, marginBottom: 16 },
   statWrap: { flex: 1 },
-  skeletonList: { marginBottom: spacing.md },
-  mb: { marginBottom: spacing.sm },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, borderLeftWidth: 4, padding: spacing.md, marginBottom: spacing.sm, ...shadows.sm },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
-  cardInfo: { flex: 1, marginRight: spacing.sm },
-  subjectName: { fontSize: fontSizes.md, fontWeight: '800', color: colors.textPrimary, marginBottom: 4 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  creditBadge: { backgroundColor: `${colors.primary}12`, paddingHorizontal: spacing.xs + 2, paddingVertical: 2, borderRadius: borderRadius.sm },
-  creditText: { fontSize: fontSizes.xs - 1, fontWeight: '700', color: colors.primary },
+  skeletonList: { marginBottom: 16 },
+  mb: { marginBottom: 8 },
+  card: { borderLeftWidth: 4, padding: 16, marginBottom: 8, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  cardInfo: { flex: 1, marginRight: 8 },
+  subjectName: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  creditBadge: { paddingHorizontal: 6, paddingVertical: 2 },
+  creditText: { fontSize: 9, fontWeight: '700' },
   difficultyDots: { flexDirection: 'row', gap: 3 },
   diffDot: { width: 6, height: 6, borderRadius: 3 },
-  diffDotActive: { backgroundColor: colors.accent },
-  diffDotInactive: { backgroundColor: `${colors.textTertiary}40` },
-  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.xs },
-  examDateText: { fontSize: fontSizes.xs, fontWeight: '600', color: colors.textSecondary },
-  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', ...shadows.md },
-  fabIcon: { fontSize: 28, color: colors.surface, lineHeight: 30, fontWeight: '700' },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
+  examDateText: { fontSize: 10, fontWeight: '600' },
+  fab: { position: 'absolute', right: 16, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', elevation: 4 },
+  fabIcon: { fontSize: 28, lineHeight: 30, fontWeight: '700' },
 });
 
 export default SubjectsScreen;

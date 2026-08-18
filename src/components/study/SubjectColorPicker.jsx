@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 export const SUBJECT_COLORS = [
   '#1B4D6A',
@@ -17,16 +17,18 @@ export const SUBJECT_COLORS = [
  * 8-Color Palette Picker for course subject accents.
  */
 const SubjectColorPicker = React.memo(({ selectedColor = SUBJECT_COLORS[0], onColorChange }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Subject color</Text>
+      <Text style={[styles.label, { color: theme.colors.textPrimary }]}>Subject color</Text>
       <View style={styles.paletteRow}>
         {SUBJECT_COLORS.map((col) => {
           const isSelected = selectedColor?.toLowerCase() === col.toLowerCase();
           return (
             <TouchableOpacity
               key={col}
-              style={[styles.colorCircle, { backgroundColor: col }]}
+              style={[styles.colorCircle, { backgroundColor: col, borderRadius: theme.borderRadius.full }]}
               onPress={() => onColorChange?.(col)}
               activeOpacity={0.8}
             >
@@ -41,28 +43,26 @@ const SubjectColorPicker = React.memo(({ selectedColor = SUBJECT_COLORS[0], onCo
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   label: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs + 2,
+    marginBottom: 6,
   },
   paletteRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm + 2,
+    gap: 10,
   },
   colorCircle: {
     width: 38,
     height: 38,
-    borderRadius: borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkIcon: {
-    color: colors.surface,
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '900',
   },

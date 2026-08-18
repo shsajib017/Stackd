@@ -1,37 +1,41 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatDateFull } from '../../utils/formatDate';
 
 const MEAL_EMOJIS = { Breakfast: '🍳', Lunch: '🍛', Dinner: '🍲', Snacks: '🥪' };
 
 /** Component rendering all meals logged on a specific date. */
 const MealDayGroup = React.memo(({ date, meals = [] }) => {
+  const { theme } = useTheme();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.dateHeader}>{formatDateFull(date)}</Text>
-      <View style={styles.card}>
+      <Text style={[styles.dateHeader, { color: theme.colors.textSecondary }]}>{formatDateFull(date)}</Text>
+      <View style={[styles.card, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
         {meals.map((meal, idx) => {
           const isDorm = meal.source === 'dorm';
           const emoji = MEAL_EMOJIS[meal.meal_type] || '🍽️';
           const isLast = idx === meals.length - 1;
 
           return (
-            <View key={meal.id || idx} style={[styles.mealRow, isLast && styles.noBorder]}>
+            <View key={meal.id || idx} style={[styles.mealRow, { borderBottomColor: `${theme.colors.textTertiary}15` }, isLast && styles.noBorder]}>
               <View style={styles.leftCol}>
                 <Text style={styles.emoji}>{emoji}</Text>
                 <View style={styles.mealInfo}>
-                  <Text style={styles.mealType}>{meal.meal_type}</Text>
-                  <Text style={styles.foodName} numberOfLines={1}>
+                  <Text style={[styles.mealType, { color: theme.colors.textTertiary }]}>{meal.meal_type}</Text>
+                  <Text style={[styles.foodName, { color: theme.colors.textPrimary }]} numberOfLines={1}>
                     {isDorm ? 'Dorm meal' : (meal.food_name || 'Outside food')}
                   </Text>
                 </View>
               </View>
               <View style={styles.rightCol}>
                 {isDorm ? (
-                  <View style={styles.dormBadge}><Text style={styles.dormText}>Dorm</Text></View>
+                  <View style={[styles.dormBadge, { backgroundColor: `${theme.colors.success}18`, borderRadius: theme.borderRadius.full }]}>
+                    <Text style={[styles.dormText, { color: theme.colors.success }]}>Dorm</Text>
+                  </View>
                 ) : (
-                  <Text style={styles.priceText}>৳ {meal.price || 0}</Text>
+                  <Text style={[styles.priceText, { color: theme.colors.accent }]}>৳ {meal.price || 0}</Text>
                 )}
               </View>
             </View>
@@ -43,20 +47,20 @@ const MealDayGroup = React.memo(({ date, meals = [] }) => {
 });
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.md },
-  dateHeader: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textSecondary, marginBottom: spacing.xs, textTransform: 'uppercase' },
-  card: { backgroundColor: colors.surface, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  mealRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: `${colors.textTertiary}15` },
+  container: { marginBottom: 16 },
+  dateHeader: { fontSize: 11, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
+  card: { paddingHorizontal: 16, borderWidth: 1 },
+  mealRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1 },
   noBorder: { borderBottomWidth: 0 },
-  leftCol: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: spacing.sm },
-  emoji: { fontSize: fontSizes.md, marginRight: spacing.sm },
+  leftCol: { flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 },
+  emoji: { fontSize: 14, marginRight: 8 },
   mealInfo: { flex: 1 },
-  mealType: { fontSize: fontSizes.xs, fontWeight: '600', color: colors.textTertiary, marginBottom: 1 },
-  foodName: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
+  mealType: { fontSize: 10, fontWeight: '600', marginBottom: 1 },
+  foodName: { fontSize: 12, fontWeight: '600' },
   rightCol: { alignItems: 'flex-end' },
-  priceText: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.accent },
-  dormBadge: { backgroundColor: `${colors.success}18`, paddingHorizontal: spacing.xs + 4, paddingVertical: 2, borderRadius: borderRadius.full },
-  dormText: { fontSize: fontSizes.xs - 1, fontWeight: '700', color: colors.success },
+  priceText: { fontSize: 12, fontWeight: '700' },
+  dormBadge: { paddingHorizontal: 8, paddingVertical: 2 },
+  dormText: { fontSize: 9, fontWeight: '700' },
 });
 
 export default MealDayGroup;

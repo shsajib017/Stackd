@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import Button from './Button';
 
 /**
@@ -16,14 +16,26 @@ const ConfirmModal = React.memo(({
   onCancel,
   isDanger = false,
 }) => {
+  const { theme } = useTheme();
+
   if (!visible) return null;
 
   return (
     <View style={styles.overlay}>
       <TouchableOpacity style={styles.backdropPress} activeOpacity={1} onPress={onCancel} />
-      <View style={styles.card}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.message}>{message}</Text>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.xl,
+            borderColor: `${theme.colors.textTertiary}20`,
+            borderWidth: 1,
+          },
+        ]}
+      >
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{title}</Text>
+        <Text style={[styles.message, { color: theme.colors.textSecondary }]}>{message}</Text>
         <View style={styles.buttonRow}>
           <View style={styles.buttonWrapper}>
             <Button
@@ -55,7 +67,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 24,
     zIndex: 9999,
     elevation: 999,
   },
@@ -65,35 +77,30 @@ const styles = StyleSheet.create({
   card: {
     width: '88%',
     maxWidth: 340,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
     alignItems: 'center',
-    ...shadows.lg,
     elevation: 1000,
     zIndex: 10000,
   },
   title: {
-    fontSize: fontSizes.lg + 1,
+    fontSize: 17,
     fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
     textAlign: 'center',
   },
   message: {
-    fontSize: fontSizes.sm,
-    color: colors.textSecondary,
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.xs,
+    lineHeight: 20,
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
+    gap: 8,
     width: '100%',
   },
   buttonWrapper: {

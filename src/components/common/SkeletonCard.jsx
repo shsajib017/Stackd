@@ -7,23 +7,19 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { borderRadius as defaultBorderRadius, colors } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 
 /**
  * Animated skeleton placeholder card with looping opacity shimmer effect.
- *
- * @param {object} props
- * @param {number|string} [props.width='100%'] - Skeleton width.
- * @param {number|string} [props.height=80] - Skeleton height.
- * @param {number} [props.borderRadius] - Corner border radius.
- * @param {object|array} [props.style] - Style overrides.
  */
 const SkeletonCard = React.memo(({
   width = '100%',
   height = 80,
-  borderRadius = defaultBorderRadius.md,
+  borderRadius,
   style,
 }) => {
+  const { theme } = useTheme();
+  const radius = borderRadius ?? theme.borderRadius.md;
   const opacity = useSharedValue(0.3);
 
   useEffect(() => {
@@ -45,7 +41,12 @@ const SkeletonCard = React.memo(({
     <Animated.View
       style={[
         styles.skeleton,
-        { width, height, borderRadius },
+        {
+          width,
+          height,
+          borderRadius: radius,
+          backgroundColor: theme.colors.surface,
+        },
         animatedStyle,
         style,
       ]}
@@ -55,7 +56,6 @@ const SkeletonCard = React.memo(({
 
 const styles = StyleSheet.create({
   skeleton: {
-    backgroundColor: colors.textTertiary,
     overflow: 'hidden',
   },
 });

@@ -1,18 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { borderRadius, colors, fontSizes, shadows, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import { formatBDT } from '../../utils/formatCurrency';
 import ProgressBar from '../common/ProgressBar';
 
 /**
  * Compact horizontal savings goal card.
- *
- * @param {object} props
- * @param {string} props.title - Goal title.
- * @param {number} props.currentAmount - Current saved amount.
- * @param {number} props.targetAmount - Target amount.
- * @param {string} [props.emoji='🎯'] - Goal emoji icon.
- * @param {() => void} [props.onPress] - Press callback.
  */
 const SavingsGoalCard = React.memo(({
   title,
@@ -21,20 +14,33 @@ const SavingsGoalCard = React.memo(({
   emoji = '🎯',
   onPress,
 }) => {
+  const { theme } = useTheme();
   const progress = targetAmount > 0 ? Math.min(currentAmount / targetAmount, 1) : 0;
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.colors.surface,
+          borderRadius: theme.borderRadius.lg,
+          borderColor: `${theme.colors.textTertiary}20`,
+          borderWidth: 1,
+        },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
       <View style={styles.header}>
         <Text style={styles.emoji}>{emoji}</Text>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]} numberOfLines={1}>
           {title}
         </Text>
       </View>
-      <Text style={styles.amountText}>
-        {formatBDT(currentAmount)} <Text style={styles.targetText}>/ {formatBDT(targetAmount)}</Text>
+      <Text style={[styles.amountText, { color: theme.colors.textPrimary }]}>
+        {formatBDT(currentAmount)} <Text style={[styles.targetText, { color: theme.colors.textSecondary }]}>/ {formatBDT(targetAmount)}</Text>
       </Text>
-      <ProgressBar progress={progress} color={colors.primary} height={6} showLabel={false} />
+      <ProgressBar progress={progress} color={theme.colors.primary} height={6} showLabel={false} />
     </TouchableOpacity>
   );
 });
@@ -42,37 +48,31 @@ const SavingsGoalCard = React.memo(({
 const styles = StyleSheet.create({
   card: {
     width: 160,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginRight: spacing.sm,
-    ...shadows.sm,
+    padding: 16,
+    marginRight: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   emoji: {
     fontSize: 18,
-    marginRight: spacing.xs,
+    marginRight: 4,
   },
   title: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textPrimary,
     flex: 1,
   },
   amountText: {
-    fontSize: fontSizes.sm,
+    fontSize: 12,
     fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   targetText: {
-    fontSize: fontSizes.xs,
+    fontSize: 10,
     fontWeight: '400',
-    color: colors.textSecondary,
   },
 });
 

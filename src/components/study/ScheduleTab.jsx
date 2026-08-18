@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { spacing } from '../../config/theme';
 import ConfirmModal from '../common/ConfirmModal';
 import EmptyState from '../common/EmptyState';
 import SkeletonCard from '../common/SkeletonCard';
@@ -73,9 +72,9 @@ const ScheduleTab = React.memo(({ sessions = [], subject, onToggleComplete, onDe
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  loadingContainer: { padding: spacing.md },
-  listContent: { padding: spacing.md, paddingBottom: 100 },
-  mb: { marginBottom: spacing.sm },
+  loadingContainer: { padding: 16 },
+  listContent: { padding: 16, paddingBottom: 100 },
+  mb: { marginBottom: 8 },
 });
 
 export default ScheduleTab;

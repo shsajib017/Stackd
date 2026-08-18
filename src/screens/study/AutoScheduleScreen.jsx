@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { borderRadius, colors, fontSizes, spacing } from '../../config/theme';
+import { useTheme } from '../../config/ThemeContext';
 import useAuthStore from '../../store/useAuthStore';
 import useSchedule from '../../hooks/useSchedule';
 import useStudySessions from '../../hooks/useStudySessions';
@@ -14,6 +14,7 @@ import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
 import DailyHoursInput from '../../components/study/DailyHoursInput';
 import SchedulePreview from '../../components/study/SchedulePreview';
+import ScreenWrapper from '../../components/common/ScreenWrapper';
 import AppHeader from '../../components/common/AppHeader';
 
 const LENGTHS = [25, 45, 60];
@@ -22,6 +23,7 @@ const DEFAULT_HOURS = { monday: 4, tuesday: 4, wednesday: 4, thursday: 4, friday
 /** Automated AI-driven Timetable Generation Screen. */
 const AutoScheduleScreen = React.memo(({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const user = useAuthStore((state) => state.user);
   const subjects = useStudyStore((state) => state.subjects);
   const showToast = useUIStore((state) => state.showToast);
@@ -71,108 +73,117 @@ const AutoScheduleScreen = React.memo(({ navigation }) => {
   }, [applySchedule, generatedSessions, navigation, showToast]);
 
   return (
-    <View style={styles.screen}>
+    <ScreenWrapper>
       <AppHeader title="Generate Schedule" showBack onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 80 }]} showsVerticalScrollIndicator={false}>
-      {/* Intro Card */}
-      <View style={styles.introCard}>
-        <Text style={styles.introTitle}>Smart Timetable Generator</Text>
-        <Text style={styles.introSub}>Stackd intelligently balances study sessions prioritized by exam proximity and difficulty.</Text>
-        <View style={styles.introBadgeRow}>
-          <View style={styles.introBadge}><Text style={styles.badgeText}>📚 {subjects?.length || 0} Subjects</Text></View>
-          {nearestExamDays !== null && (
-            <View style={[styles.introBadge, styles.badgeOrange]}><Text style={[styles.badgeText, styles.textOrange]}>⏳ Exam in {nearestExamDays}d</Text></View>
-          )}
-        </View>
-      </View>
-
-      {/* Subjects Overview */}
-      {!subjects?.length ? (
-        <EmptyState icon="📚" title="No subjects added yet" subtitle="Add your course subjects to generate a study timetable" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} style={styles.mb} />
-      ) : (
-        <View style={styles.subjectsBox}>
-          <Text style={styles.sectionHeader}>Detected Subjects ({subjects.length})</Text>
-          {subjects.map((sub) => (
-            <View key={sub.id} style={styles.subRow}>
-              <View style={[styles.subDot, { backgroundColor: sub.color || colors.primary }]} />
-              <Text style={styles.subName} numberOfLines={1}>{sub.name}</Text>
-              <Text style={styles.subInfo}>{sub.exam_date ? `Exam ${formatDate(sub.exam_date)}` : 'No exam date'} • {sub.difficulty || 3}★</Text>
+        {/* Intro Card */}
+        <View style={[styles.introCard, { backgroundColor: `${theme.colors.primary}12`, borderColor: `${theme.colors.primary}30`, borderRadius: theme.borderRadius.lg }]}>
+          <Text style={[styles.introTitle, { color: theme.colors.primary }]}>Smart Timetable Generator</Text>
+          <Text style={[styles.introSub, { color: theme.colors.textPrimary }]}>Stackd intelligently balances study sessions prioritized by exam proximity and difficulty.</Text>
+          <View style={styles.introBadgeRow}>
+            <View style={[styles.introBadge, { backgroundColor: `${theme.colors.primary}18`, borderRadius: theme.borderRadius.sm }]}>
+              <Text style={[styles.badgeText, { color: theme.colors.primary }]}>📚 {subjects?.length || 0} Subjects</Text>
             </View>
-          ))}
+            {nearestExamDays !== null && (
+              <View style={[styles.introBadge, { backgroundColor: `${theme.colors.accent}18`, borderRadius: theme.borderRadius.sm }]}>
+                <Text style={[styles.badgeText, { color: theme.colors.accent }]}>⏳ Exam in {nearestExamDays}d</Text>
+              </View>
+            )}
+          </View>
         </View>
-      )}
 
-      <DailyHoursInput availableHours={availableHours} onChangeHours={handleHourChange} />
+        {/* Subjects Overview */}
+        {!subjects?.length ? (
+          <EmptyState icon="📚" title="No subjects added yet" subtitle="Add your course subjects to generate a study timetable" actionLabel="Add subject" onAction={() => navigation.navigate('AddSubjectScreen')} style={styles.mb} />
+        ) : (
+          <View style={[styles.subjectsBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
+            <Text style={[styles.sectionHeader, { color: theme.colors.textSecondary }]}>Detected Subjects ({subjects.length})</Text>
+            {subjects.map((sub) => (
+              <View key={sub.id} style={styles.subRow}>
+                <View style={[styles.subDot, { backgroundColor: sub.color || theme.colors.primary }]} />
+                <Text style={[styles.subName, { color: theme.colors.textPrimary }]} numberOfLines={1}>{sub.name}</Text>
+                <Text style={[styles.subInfo, { color: theme.colors.textSecondary }]}>{sub.exam_date ? `Exam ${formatDate(sub.exam_date)}` : 'No exam date'} • {sub.difficulty || 3}★</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
-      <Text style={styles.sectionLabel}>Preferred Session Length</Text>
-      <View style={styles.lengthRow}>
-        {LENGTHS.map((len) => {
-          const active = sessionLength === len;
-          return (
-            <TouchableOpacity key={len} style={[styles.lengthPill, active && styles.lengthPillActive]} onPress={() => setSessionLength(len)}>
-              <Text style={[styles.lengthText, active && styles.textWhite]}>{len} min</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+        <DailyHoursInput availableHours={availableHours} onChangeHours={handleHourChange} />
 
-      <Text style={styles.sectionLabel}>Start Date</Text>
-      <View style={styles.dateBox}><Text style={styles.dateBoxText}>📅 Tomorrow ({formatDate(startDate)})</Text></View>
-
-      {errorMessage ? <Text style={styles.errorBanner}>{errorMessage}</Text> : null}
-
-      {isGenerating ? (
-        <View style={styles.loadingBox}><ActivityIndicator color={colors.primary} size="small" /><Text style={styles.loadingText}>Building optimal schedule...</Text></View>
-      ) : (
-        <Button label="Generate schedule" onPress={handleGenerate} fullWidth style={styles.genBtn} />
-      )}
-
-      {generatedSessions.length > 0 && (
-        <View>
-          <SchedulePreview sessions={generatedSessions} subjectsMap={subjectsMap} />
-          <Button label="Apply to schedule" onPress={handleApply} fullWidth style={styles.applyBtn} />
-          <Button label="Regenerate" variant="secondary" onPress={handleGenerate} fullWidth style={styles.regenBtn} />
+        <Text style={[styles.sectionLabel, { color: theme.colors.textPrimary }]}>Preferred Session Length</Text>
+        <View style={styles.lengthRow}>
+          {LENGTHS.map((len) => {
+            const active = sessionLength === len;
+            return (
+              <TouchableOpacity
+                key={len}
+                style={[
+                  styles.lengthPill,
+                  { borderRadius: theme.borderRadius.md, backgroundColor: active ? theme.colors.primary : theme.colors.surface, borderColor: active ? theme.colors.primary : `${theme.colors.textTertiary}20` },
+                ]}
+                onPress={() => setSessionLength(len)}
+              >
+                <Text style={[styles.lengthText, { color: active ? theme.colors.surface : theme.colors.textPrimary }]}>{len} min</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
-      )}
+
+        <Text style={[styles.sectionLabel, { color: theme.colors.textPrimary }]}>Start Date</Text>
+        <View style={[styles.dateBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, borderColor: `${theme.colors.textTertiary}20` }]}>
+          <Text style={[styles.dateBoxText, { color: theme.colors.textPrimary }]}>📅 Tomorrow ({formatDate(startDate)})</Text>
+        </View>
+
+        {errorMessage ? <Text style={[styles.errorBanner, { color: theme.colors.error }]}>{errorMessage}</Text> : null}
+
+        {isGenerating ? (
+          <View style={[styles.loadingBox, { backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md }]}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+            <Text style={[styles.loadingText, { color: theme.colors.primary }]}>Building optimal schedule...</Text>
+          </View>
+        ) : (
+          <Button label="Generate schedule" onPress={handleGenerate} fullWidth style={styles.genBtn} />
+        )}
+
+        {generatedSessions.length > 0 && (
+          <View>
+            <SchedulePreview sessions={generatedSessions} subjectsMap={subjectsMap} />
+            <Button label="Apply to schedule" onPress={handleApply} fullWidth style={styles.applyBtn} />
+            <Button label="Regenerate" variant="secondary" onPress={handleGenerate} fullWidth style={styles.regenBtn} />
+          </View>
+        )}
       </ScrollView>
-    </View>
+    </ScreenWrapper>
   );
 });
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  headerBtn: { paddingHorizontal: spacing.sm },
-  headerBackIcon: { fontSize: fontSizes.xl, color: colors.textPrimary, fontWeight: '700' },
-  content: { padding: spacing.md, paddingBottom: 100 },
-  introCard: { backgroundColor: `${colors.primary}12`, borderRadius: borderRadius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.primary}30` },
-  introTitle: { fontSize: fontSizes.md + 1, fontWeight: '800', color: colors.primary, marginBottom: 4 },
-  introSub: { fontSize: fontSizes.xs, color: colors.textPrimary, lineHeight: 18, marginBottom: spacing.sm },
-  introBadgeRow: { flexDirection: 'row', gap: spacing.xs },
-  introBadge: { backgroundColor: `${colors.primary}18`, paddingHorizontal: spacing.sm, paddingVertical: 4, borderRadius: borderRadius.sm },
-  badgeOrange: { backgroundColor: `${colors.accent}18` },
-  badgeText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.primary },
-  textOrange: { color: colors.accent },
-  subjectsBox: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  sectionHeader: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textSecondary, textTransform: 'uppercase', marginBottom: spacing.xs + 2 },
+  content: { paddingVertical: 8, paddingBottom: 100 },
+  introCard: { padding: 16, marginBottom: 16, borderWidth: 1 },
+  introTitle: { fontSize: 15, fontWeight: '800', marginBottom: 4 },
+  introSub: { fontSize: 11, lineHeight: 18, marginBottom: 8 },
+  introBadgeRow: { flexDirection: 'row', gap: 6 },
+  introBadge: { paddingHorizontal: 12, paddingVertical: 4 },
+  badgeText: { fontSize: 10, fontWeight: '700' },
+  subjectsBox: { padding: 16, marginBottom: 16, borderWidth: 1 },
+  sectionHeader: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },
   subRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4 },
-  subDot: { width: 8, height: 8, borderRadius: 4, marginRight: spacing.xs + 2 },
-  subName: { fontSize: fontSizes.xs + 1, fontWeight: '700', color: colors.textPrimary, flex: 1, marginRight: spacing.xs },
-  subInfo: { fontSize: fontSizes.xs - 1, color: colors.textSecondary, fontWeight: '500' },
-  sectionLabel: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.xs, marginTop: spacing.xs },
-  lengthRow: { flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.md },
-  lengthPill: { flex: 1, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: borderRadius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: `${colors.textTertiary}20` },
-  lengthPillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  lengthText: { fontSize: fontSizes.xs, fontWeight: '700', color: colors.textPrimary },
-  textWhite: { color: colors.surface },
-  dateBox: { backgroundColor: colors.surface, borderRadius: borderRadius.md, padding: spacing.md, borderWidth: 1, borderColor: `${colors.textTertiary}20`, marginBottom: spacing.md },
-  dateBoxText: { fontSize: fontSizes.sm, fontWeight: '600', color: colors.textPrimary },
-  errorBanner: { fontSize: fontSizes.xs, color: colors.error, fontWeight: '600', textAlign: 'center', marginBottom: spacing.sm },
-  genBtn: { marginTop: spacing.xs },
-  loadingBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surface, borderRadius: borderRadius.md, marginTop: spacing.xs },
-  loadingText: { fontSize: fontSizes.sm, fontWeight: '700', color: colors.primary },
-  applyBtn: { marginTop: spacing.sm },
-  regenBtn: { marginTop: spacing.xs },
-  mb: { marginBottom: spacing.md },
+  subDot: { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
+  subName: { fontSize: 12, fontWeight: '700', flex: 1, marginRight: 6 },
+  subInfo: { fontSize: 9, fontWeight: '500' },
+  sectionLabel: { fontSize: 12, fontWeight: '700', marginBottom: 4, marginTop: 4 },
+  lengthRow: { flexDirection: 'row', gap: 6, marginBottom: 16 },
+  lengthPill: { flex: 1, alignItems: 'center', paddingVertical: 10, borderWidth: 1 },
+  lengthText: { fontSize: 11, fontWeight: '700' },
+  dateBox: { padding: 16, borderWidth: 1, marginBottom: 16 },
+  dateBoxText: { fontSize: 12, fontWeight: '600' },
+  errorBanner: { fontSize: 10, fontWeight: '600', textAlign: 'center', marginBottom: 8 },
+  genBtn: { marginTop: 4 },
+  loadingBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 16, marginTop: 4 },
+  loadingText: { fontSize: 12, fontWeight: '700' },
+  applyBtn: { marginTop: 8 },
+  regenBtn: { marginTop: 4 },
+  mb: { marginBottom: 16 },
 });
 
 export default AutoScheduleScreen;
